@@ -3,6 +3,7 @@
 > **Spec-Driven Development CLI for AI Agents** — Stop vibe-coding. Enforce architecture, specifications, and verifiable checklists before writing code.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![NPM Version](https://img.shields.io/npm/v/%40dedasema%2Fsdd-cli?color=cb3837&logo=npm)](https://www.npmjs.com/package/@dedasema/sdd-cli)
 [![Built with TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![pnpm](https://img.shields.io/badge/pnpm-11.x-F69220?logo=pnpm&logoColor=white)](https://pnpm.io/)
 
@@ -22,25 +23,31 @@ When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Win
 
 ## Quick Start
 
-You can run SDD directly with `npx` or `pnpm dlx` without installing:
+### Option A: Run directly with `npx` (No installation needed)
 
 ```bash
 # 1. Initialize SDD and inject AGENTS.md guidelines in your repository
-npx sdd init
+npx @dedasema/sdd-cli init
 
 # 2. Create a new change workspace with phase templates
-npx sdd new user-authentication
+npx @dedasema/sdd-cli new user-authentication
 
 # 3. Check progress on active tasks
-npx sdd status
+npx @dedasema/sdd-cli status
 ```
 
-Or install it globally:
+### Option B: Install globally for the short `sdd` command
 
 ```bash
-pnpm add -g sdd
-# or
-npm install -g sdd
+# Install once globally
+npm install -g @dedasema/sdd-cli
+# or with pnpm:
+pnpm add -g @dedasema/sdd-cli
+
+# Now use the short `sdd` command anywhere:
+sdd init
+sdd new user-authentication
+sdd status
 ```
 
 ---
