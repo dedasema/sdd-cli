@@ -1,0 +1,47 @@
+schema: spec-driven
+
+context: |
+  Tech stack: Node.js (>=18), TypeScript, pnpm, Commander, tsup
+  Architecture: Modular CLI architecture, pure ESM
+  Testing: Vitest (planned for unit & integration tests)
+  Style: TypeScript strict, ESM
+
+strict_tdd: true
+
+testing:
+  strict_tdd: true
+  test_runner:
+    command: pnpm test
+    framework: vitest (planned)
+  layers:
+    unit: planned
+    integration: planned
+    e2e: not_planned
+  coverage:
+    available: false
+  quality_tools:
+    type_checker: pnpm exec tsc --noEmit
+    linter: not_installed
+    formatter: not_installed
+
+rules:
+  proposal:
+    - Include intent, user impact, and scope
+    - Identify affected modules
+  specs:
+    - Use Given/When/Then format for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+  design:
+    - Detail CLI command interface and file contracts
+    - Document architecture decisions with rationale
+  tasks:
+    - Group tasks by phase (scaffolding, core commands, templates, tests)
+    - Use hierarchical numbering (1.1, 1.2, etc.)
+  apply:
+    - Follow strict TDD: write tests before implementation
+    - Pure ESM with Node.js standards
+  verify:
+    - Run automated test suite
+    - Verify manual CLI execution in clean environment
+  archive:
+    - Sync delta specs to living specs in openspec/specs/
