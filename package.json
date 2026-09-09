@@ -1,15 +1,23 @@
 {
-  "name": "sdd",
+  "name": "@dedasema/sdd-cli",
   "version": "0.1.0",
   "description": "Agnostic CLI to scaffold and enforce Spec-Driven Development (SDD) with AI agents",
   "type": "module",
   "bin": {
     "sdd": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "prepublishOnly": "pnpm test && pnpm build"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "sdd",
@@ -18,7 +26,7 @@
     "agents",
     "cli"
   ],
-  "author": "",
+  "author": "dedasema",
   "license": "MIT",
   "dependencies": {
     "@clack/prompts": "^0.9.1",
