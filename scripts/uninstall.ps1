@@ -7,9 +7,11 @@ Write-Host "=========================================" -ForegroundColor Cyan
 Write-Host "    SDD CLI - Universal Uninstaller      " -ForegroundColor Cyan
 Write-Host "=========================================" -ForegroundColor Cyan
 
-# 1. Resolve Home Directory
+# 1. Resolve Home & Config Directories
 $homeDir = $env:USERPROFILE
 if (-not $homeDir) { $homeDir = $HOME }
+
+$zedDir = if ($env:APPDATA) { Join-Path $env:APPDATA "Zed" } else { Join-Path $homeDir ".config\zed" }
 
 # 2. Interactive Selection Menu
 Write-Host "`nSelect AI environments to clean up:" -ForegroundColor Cyan
@@ -20,17 +22,18 @@ Write-Host "  [4] GitHub Copilot (VS Code)(~/.copilot/copilot-instructions.md + 
 Write-Host "  [5] OpenCode                (~/.config/opencode/AGENTS.md + skills)"
 Write-Host "  [6] Claude Code             (~/.claude/CLAUDE.md + commands)"
 Write-Host "  [7] Cursor                  (~/.cursor/rules/sdd.mdc + skills)"
+Write-Host "  [8] Zed                     (%APPDATA%/Zed: rule + /sdd + skill)"
 Write-Host "  [A] All environments       (Default - press Enter)"
 
-$rawChoice = Read-Host "`nChoice(s) to remove [e.g. 1,6,7 or A (Default)]"
+$rawChoice = Read-Host "`nChoice(s) to remove [e.g. 8 or 1,6,7 or A (Default)]"
 
 $tokens = $rawChoice -split '[, ]' | Where-Object { $_ -ne '' }
 if (-not $tokens -or $tokens -contains 'A' -or $tokens -contains 'a') {
-    $selected = @(1, 2, 3, 4, 5, 6, 7)
+    $selected = @(1, 2, 3, 4, 5, 6, 7, 8)
 } else {
-    $selected = @($tokens | Where-Object { $_ -match '^[1-7]$' } | ForEach-Object { [int]$_ })
+    $selected = @($tokens | Where-Object { $_ -match '^[1-8]$' } | ForEach-Object { [int]$_ })
     if ($selected.Count -eq 0) {
-        $selected = @(1, 2, 3, 4, 5, 6, 7)
+        $selected = @(1, 2, 3, 4, 5, 6, 7, 8)
     }
 }
 
@@ -52,6 +55,31 @@ function Remove-DelimitedRule([string]$filePath) {
     }
 }
 
+function Remove-ZedSlashCommand([string]$settingsPath) {
+    if (Test-Path $settingsPath) {
+        node -e '
+        const fs = require("fs");
+        const filePath = process.argv[1];
+        if (fs.existsSync(filePath)) {
+            try {
+                const settings = JSON.parse(fs.readFileSync(filePath, "utf8"));
+                if (settings.assistant && settings.assistant.slash_commands) {
+                    delete settings.assistant.slash_commands.sdd;
+                    if (Object.keys(settings.assistant.slash_commands).length === 0) {
+                        delete settings.assistant.slash_commands;
+                    }
+                    if (Object.keys(settings.assistant).length === 0) {
+                        delete settings.assistant;
+                    }
+                    fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + "\n", "utf8");
+                    console.log("    \x1b[33m[REMOVED] Zed Slash Command /sdd from " + filePath + "\x1b[0m");
+                }
+            } catch (e) {}
+        }
+        ' "$settingsPath"
+    }
+}
+
 Write-Host "`n--> Removing selected SDD skills & global rules..." -ForegroundColor Yellow
 
 # Remove Skills
@@ -63,6 +91,7 @@ $envSkillMap = @{
     5 = @{ Name = "OpenCode";        Path = (Join-Path $homeDir ".config\opencode\skills\sdd") }
     6 = @{ Name = "Claude Code";     Path = (Join-Path $homeDir ".claude\skills\sdd") }
     7 = @{ Name = "Cursor";          Path = (Join-Path $homeDir ".cursor\skills\sdd") }
+    8 = @{ Name = "Zed";             Path = (Join-Path $zedDir "skills\sdd") }
 }
 
 foreach ($key in $selected) {
@@ -74,8 +103,6 @@ foreach ($key in $selected) {
         }
     }
 }
-
-# Remove Global Rules & Commands per selected environment
 
 # [3] Codex
 if ($selected -contains 3) {
@@ -111,8 +138,14 @@ if ($selected -contains 7) {
     }
 }
 
+# [8] Zed
+if ($selected -contains 8) {
+    Remove-DelimitedRule (Join-Path $zedDir "AGENTS.md")
+    Remove-ZedSlashCommand (Join-Path $zedDir "settings.json")
+}
+
 # Uninstall package if all selected
-if ($selected.Count -eq 7) {
+if ($selected.Count -eq 8) {
     Write-Host "`n--> Uninstalling @dedasema/sdd-cli package..." -ForegroundColor Yellow
     $pnpmCmd = Get-Command pnpm -ErrorAction SilentlyContinue
     $npmCmd = Get-Command npm -ErrorAction SilentlyContinue

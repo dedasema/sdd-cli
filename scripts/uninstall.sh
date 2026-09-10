@@ -8,6 +8,7 @@ echo -e "\033[36m=========================================\033[0m"
 
 # 1. Resolve Home Directory
 HOME_DIR="${HOME:-$USERPROFILE}"
+ZED_DIR="$HOME_DIR/.config/zed"
 
 # 2. Interactive Selection Menu
 echo -e "\n\033[36mSelect AI environments to clean up:\033[0m"
@@ -18,30 +19,31 @@ echo "  [4] GitHub Copilot (VS Code)(~/.copilot/copilot-instructions.md + skills
 echo "  [5] OpenCode                (~/.config/opencode/AGENTS.md + skills)"
 echo "  [6] Claude Code             (~/.claude/CLAUDE.md + commands)"
 echo "  [7] Cursor                  (~/.cursor/rules/sdd.mdc + skills)"
+echo "  [8] Zed                     (~/.config/zed: rule + /sdd + skill)"
 echo "  [A] All environments       (Default - press Enter)"
 
 RAW_CHOICE=""
 if [ -c /dev/tty ]; then
-    printf "\nChoice(s) to remove [e.g. 1,6,7 or A (Default)]: "
+    printf "\nChoice(s) to remove [e.g. 8 or 1,6,7 or A (Default)]: "
     read -r RAW_CHOICE < /dev/tty || true
 elif [ -t 0 ]; then
-    printf "\nChoice(s) to remove [e.g. 1,6,7 or A (Default)]: "
+    printf "\nChoice(s) to remove [e.g. 8 or 1,6,7 or A (Default)]: "
     read -r RAW_CHOICE || true
 fi
 
 # Parse user choice
 if [ -z "$RAW_CHOICE" ] || [ "$RAW_CHOICE" = "A" ] || [ "$RAW_CHOICE" = "a" ]; then
-    SELECTED="1 2 3 4 5 6 7"
+    SELECTED="1 2 3 4 5 6 7 8"
 else
     CLEANED=$(echo "$RAW_CHOICE" | tr ',' ' ')
     SELECTED=""
     for num in $CLEANED; do
         case "$num" in
-            1|2|3|4|5|6|7) SELECTED="$SELECTED $num" ;;
+            1|2|3|4|5|6|7|8) SELECTED="$SELECTED $num" ;;
         esac
     done
     if [ -z "$SELECTED" ]; then
-        SELECTED="1 2 3 4 5 6 7"
+        SELECTED="1 2 3 4 5 6 7 8"
     fi
 fi
 
@@ -68,6 +70,32 @@ remove_delimited_rule() {
             }
         }
         ' "$file"
+    fi
+}
+
+remove_zed_slash_command() {
+    local settings_path="$1"
+    if [ -f "$settings_path" ]; then
+        node -e '
+        const fs = require("fs");
+        const filePath = process.argv[1];
+        if (fs.existsSync(filePath)) {
+            try {
+                const settings = JSON.parse(fs.readFileSync(filePath, "utf8"));
+                if (settings.assistant && settings.assistant.slash_commands) {
+                    delete settings.assistant.slash_commands.sdd;
+                    if (Object.keys(settings.assistant.slash_commands).length === 0) {
+                        delete settings.assistant.slash_commands;
+                    }
+                    if (Object.keys(settings.assistant).length === 0) {
+                        delete settings.assistant;
+                    }
+                    fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + "\n", "utf8");
+                    console.log("    \x1b[33m[REMOVED] Zed Slash Command /sdd from " + filePath + "\x1b[0m");
+                }
+            } catch (e) {}
+        }
+        ' "$settings_path"
     fi
 }
 
@@ -138,11 +166,20 @@ for item in $SELECTED; do
                 echo -e "\033[33m    [REMOVED] Cursor Rule    -> $rule_target\033[0m"
             fi
             ;;
+        8)
+            target="$ZED_DIR/skills/sdd"
+            if [ -d "$target" ]; then
+                rm -rf "$target"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
+            fi
+            remove_delimited_rule "$ZED_DIR/AGENTS.md"
+            remove_zed_slash_command "$ZED_DIR/settings.json"
+            ;;
     esac
 done
 
 # If all environments uninstalled, also remove CLI package
-if [ "$SELECTED" = "1 2 3 4 5 6 7" ]; then
+if [ "$SELECTED" = "1 2 3 4 5 6 7 8" ]; then
     echo -e "\n\033[33m--> Uninstalling @dedasema/sdd-cli package...\033[0m"
     if command -v pnpm >/dev/null 2>&1; then
         pnpm rm -g @dedasema/sdd-cli >/dev/null 2>&1 || true

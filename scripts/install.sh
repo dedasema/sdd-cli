@@ -29,6 +29,7 @@ fi
 
 # 3. Resolve Home Directory
 HOME_DIR="${HOME:-$USERPROFILE}"
+ZED_DIR="$HOME_DIR/.config/zed"
 
 # 4. Interactive Agent / IDE Selection Menu
 echo -e "\n\033[36mSelect AI environments to configure:\033[0m"
@@ -39,30 +40,31 @@ echo "  [4] GitHub Copilot (VS Code)(~/.copilot/copilot-instructions.md + skills
 echo "  [5] OpenCode                (~/.config/opencode/AGENTS.md + skills)"
 echo "  [6] Claude Code             (~/.claude/CLAUDE.md + /sdd command)"
 echo "  [7] Cursor                  (~/.cursor/rules/sdd.mdc + skills)"
+echo "  [8] Zed                     (~/.config/zed: rule + /sdd + skill)"
 echo "  [A] All environments       (Default - press Enter)"
 
 RAW_CHOICE=""
 if [ -c /dev/tty ]; then
-    printf "\nChoice(s) [e.g. 1,6,7 or A (Default)]: "
+    printf "\nChoice(s) [e.g. 8 or 1,6,7 or A (Default)]: "
     read -r RAW_CHOICE < /dev/tty || true
 elif [ -t 0 ]; then
-    printf "\nChoice(s) [e.g. 1,6,7 or A (Default)]: "
+    printf "\nChoice(s) [e.g. 8 or 1,6,7 or A (Default)]: "
     read -r RAW_CHOICE || true
 fi
 
 # Parse user choice
 if [ -z "$RAW_CHOICE" ] || [ "$RAW_CHOICE" = "A" ] || [ "$RAW_CHOICE" = "a" ]; then
-    SELECTED="1 2 3 4 5 6 7"
+    SELECTED="1 2 3 4 5 6 7 8"
 else
     CLEANED=$(echo "$RAW_CHOICE" | tr ',' ' ')
     SELECTED=""
     for num in $CLEANED; do
         case "$num" in
-            1|2|3|4|5|6|7) SELECTED="$SELECTED $num" ;;
+            1|2|3|4|5|6|7|8) SELECTED="$SELECTED $num" ;;
         esac
     done
     if [ -z "$SELECTED" ]; then
-        SELECTED="1 2 3 4 5 6 7"
+        SELECTED="1 2 3 4 5 6 7 8"
     fi
 fi
 
@@ -136,6 +138,32 @@ inject_delimited_rule() {
     ' "$file" "$content"
 }
 
+inject_zed_slash_command() {
+    local settings_path="$1"
+    local dir
+    dir="$(dirname "$settings_path")"
+    mkdir -p "$dir"
+    node -e '
+    const fs = require("fs");
+    const filePath = process.argv[1];
+    let settings = {};
+    if (fs.existsSync(filePath)) {
+        try {
+            settings = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        } catch (e) {
+            settings = {};
+        }
+    }
+    if (!settings.assistant) settings.assistant = {};
+    if (!settings.assistant.slash_commands) settings.assistant.slash_commands = {};
+    settings.assistant.slash_commands.sdd = {
+        description: "Execute Spec-Driven Development (SDD) autonomous protocol",
+        text: "Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Check if \"openspec/\" exists in workspace. If not, run \"sdd init\".\n2. For new features or fixes, run \"sdd new <feature-name>\".\n3. Follow proposal, specs (Given/When/Then), design, and tasks before coding.\n4. Never vibe-code: wait for user approval on specifications."
+    };
+    fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + "\n", "utf8");
+    ' "$settings_path"
+}
+
 echo -e "\n\033[32m--> Provisioning selected SDD skills & global rules...\033[0m"
 
 for item in $SELECTED; do
@@ -153,49 +181,40 @@ for item in $SELECTED; do
             echo -e "\033[36m    [OK] Antigravity CLI (Skill + /sdd) -> $target/SKILL.md\033[0m"
             ;;
         3)
-            # Skill
             target="$HOME_DIR/.codex/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
             echo -e "\033[36m    [OK] OpenAI Codex (Skill)          -> $target/SKILL.md\033[0m"
-            # Global Rule: ~/.codex/AGENTS.md
             codex_rule="$HOME_DIR/.codex/AGENTS.md"
             inject_delimited_rule "$codex_rule" "$RULE_BLOCK"
             echo -e "\033[36m    [OK] OpenAI Codex (Global Rule)    -> $codex_rule\033[0m"
             ;;
         4)
-            # Skill
             target="$HOME_DIR/.copilot/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
             echo -e "\033[36m    [OK] GitHub Copilot (Skill)        -> $target/SKILL.md\033[0m"
-            # Global Rule: ~/.copilot/copilot-instructions.md
             copilot_rule="$HOME_DIR/.copilot/copilot-instructions.md"
             inject_delimited_rule "$copilot_rule" "$RULE_BLOCK"
             echo -e "\033[36m    [OK] GitHub Copilot (Global Rule)  -> $copilot_rule\033[0m"
             ;;
         5)
-            # Skill
             target="$HOME_DIR/.config/opencode/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
             echo -e "\033[36m    [OK] OpenCode (Skill)              -> $target/SKILL.md\033[0m"
-            # Global Rule: ~/.config/opencode/AGENTS.md
             opencode_rule="$HOME_DIR/.config/opencode/AGENTS.md"
             inject_delimited_rule "$opencode_rule" "$RULE_BLOCK"
             echo -e "\033[36m    [OK] OpenCode (Global Rule)        -> $opencode_rule\033[0m"
             ;;
         6)
-            # Skill
             target="$HOME_DIR/.claude/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
             echo -e "\033[36m    [OK] Claude Code (Skill)           -> $target/SKILL.md\033[0m"
-            # Global Rule: ~/.claude/CLAUDE.md
             claude_rule="$HOME_DIR/.claude/CLAUDE.md"
             inject_delimited_rule "$claude_rule" "$RULE_BLOCK"
             echo -e "\033[36m    [OK] Claude Code (Global Rule)     -> $claude_rule\033[0m"
-            # Slash Command: ~/.claude/commands/sdd.md
             CLAUDE_DIR="$HOME_DIR/.claude/commands"
             mkdir -p "$CLAUDE_DIR"
             cat << 'EOF' > "$CLAUDE_DIR/sdd.md"
@@ -207,12 +226,10 @@ EOF
             echo -e "\033[36m    [OK] Claude Code (Slash Command)   -> $CLAUDE_DIR/sdd.md\033[0m"
             ;;
         7)
-            # Skill
             target="$HOME_DIR/.cursor/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
             echo -e "\033[36m    [OK] Cursor (Skill)                -> $target/SKILL.md\033[0m"
-            # Global Rule: ~/.cursor/rules/sdd.mdc
             CURSOR_DIR="$HOME_DIR/.cursor/rules"
             mkdir -p "$CURSOR_DIR"
             cat << 'EOF' > "$CURSOR_DIR/sdd.mdc"
@@ -232,6 +249,21 @@ When the user asks to create a project, develop a feature, or use Spec-Driven De
 5. Never vibe-code: wait for user approval on specifications before touching code.
 EOF
             echo -e "\033[36m    [OK] Cursor (Global Rule)          -> $CURSOR_DIR/sdd.mdc\033[0m"
+            ;;
+        8)
+            # Zed Skill
+            target="$ZED_DIR/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] Zed (Skill)                   -> $target/SKILL.md\033[0m"
+            # Zed Global Rule
+            zed_rule="$ZED_DIR/AGENTS.md"
+            inject_delimited_rule "$zed_rule" "$RULE_BLOCK"
+            echo -e "\033[36m    [OK] Zed (Global Rule)             -> $zed_rule\033[0m"
+            # Zed Slash Command in settings.json
+            zed_settings="$ZED_DIR/settings.json"
+            inject_zed_slash_command "$zed_settings"
+            echo -e "\033[36m    [OK] Zed (/sdd Slash Command)      -> $zed_settings\033[0m"
             ;;
     esac
 done

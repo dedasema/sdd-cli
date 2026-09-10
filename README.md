@@ -34,6 +34,7 @@ Installs the CLI globally **AND** interactively prompts you to choose which AI e
 - **[5] OpenCode** (`~/.config/opencode/AGENTS.md` + skills)
 - **[6] Claude Code** (`~/.claude/CLAUDE.md` + `/sdd` command)
 - **[7] Cursor** (`~/.cursor/rules/sdd.mdc` + skills)
+- **[8] Zed** (`AGENTS.md` + `/sdd` command + skill)
 - **[A] All environments** (Default — just press Enter)
 
 **Windows (PowerShell):**

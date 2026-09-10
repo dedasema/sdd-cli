@@ -30,9 +30,11 @@ if ($pnpmCmd) {
     exit 1
 }
 
-# 3. Resolve Home Directory
+# 3. Resolve Home & Config Directories
 $homeDir = $env:USERPROFILE
 if (-not $homeDir) { $homeDir = $HOME }
+
+$zedDir = if ($env:APPDATA) { Join-Path $env:APPDATA "Zed" } else { Join-Path $homeDir ".config\zed" }
 
 # 4. Interactive Agent / IDE Selection Menu
 Write-Host "`nSelect AI environments to configure:" -ForegroundColor Cyan
@@ -43,17 +45,18 @@ Write-Host "  [4] GitHub Copilot (VS Code)(~/.copilot/copilot-instructions.md + 
 Write-Host "  [5] OpenCode                (~/.config/opencode/AGENTS.md + skills)"
 Write-Host "  [6] Claude Code             (~/.claude/CLAUDE.md + /sdd command)"
 Write-Host "  [7] Cursor                  (~/.cursor/rules/sdd.mdc + skills)"
+Write-Host "  [8] Zed                     (%APPDATA%/Zed: rule + /sdd + skill)"
 Write-Host "  [A] All environments       (Default - press Enter)"
 
-$rawChoice = Read-Host "`nChoice(s) [e.g. 1,6,7 or A (Default)]"
+$rawChoice = Read-Host "`nChoice(s) [e.g. 8 or 1,6,7 or A (Default)]"
 
 $tokens = $rawChoice -split '[, ]' | Where-Object { $_ -ne '' }
 if (-not $tokens -or $tokens -contains 'A' -or $tokens -contains 'a') {
-    $selected = @(1, 2, 3, 4, 5, 6, 7)
+    $selected = @(1, 2, 3, 4, 5, 6, 7, 8)
 } else {
-    $selected = @($tokens | Where-Object { $_ -match '^[1-7]$' } | ForEach-Object { [int]$_ })
+    $selected = @($tokens | Where-Object { $_ -match '^[1-8]$' } | ForEach-Object { [int]$_ })
     if ($selected.Count -eq 0) {
-        $selected = @(1, 2, 3, 4, 5, 6, 7)
+        $selected = @(1, 2, 3, 4, 5, 6, 7, 8)
     }
 }
 
@@ -124,6 +127,32 @@ function Inject-DelimitedRule([string]$filePath, [string]$content) {
     Set-Content -Path $filePath -Value $newContent -Encoding UTF8
 }
 
+function Inject-ZedSlashCommand([string]$settingsPath) {
+    $dir = Split-Path $settingsPath -Parent
+    if (-not (Test-Path $dir)) {
+        New-Item -ItemType Directory -Path $dir -Force | Out-Null
+    }
+    node -e '
+    const fs = require("fs");
+    const filePath = process.argv[1];
+    let settings = {};
+    if (fs.existsSync(filePath)) {
+        try {
+            settings = JSON.parse(fs.readFileSync(filePath, "utf8"));
+        } catch (e) {
+            settings = {};
+        }
+    }
+    if (!settings.assistant) settings.assistant = {};
+    if (!settings.assistant.slash_commands) settings.assistant.slash_commands = {};
+    settings.assistant.slash_commands.sdd = {
+        description: "Execute Spec-Driven Development (SDD) autonomous protocol",
+        text: "Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Check if \"openspec/\" exists in workspace. If not, run \"sdd init\".\n2. For new features or fixes, run \"sdd new <feature-name>\".\n3. Follow proposal, specs (Given/When/Then), design, and tasks before coding.\n4. Never vibe-code: wait for user approval on specifications."
+    };
+    fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + "\n", "utf8");
+    ' "$settingsPath"
+}
+
 Write-Host "`n--> Provisioning selected SDD skills & global rules..." -ForegroundColor Green
 
 # 6. Target Skills Provisioning
@@ -135,6 +164,7 @@ $envMap = @{
     5 = @{ Name = "OpenCode";        Path = (Join-Path $homeDir ".config\opencode\skills\sdd") }
     6 = @{ Name = "Claude Code";     Path = (Join-Path $homeDir ".claude\skills\sdd") }
     7 = @{ Name = "Cursor";          Path = (Join-Path $homeDir ".cursor\skills\sdd") }
+    8 = @{ Name = "Zed";             Path = (Join-Path $zedDir "skills\sdd") }
 }
 
 foreach ($key in $selected) {
@@ -219,6 +249,17 @@ When the user asks to create a project, develop a feature, or use Spec-Driven De
 '@
     Set-Content -Path $cursorRulePath -Value $cursorRuleContent -Encoding UTF8
     Write-Host "    [OK] Cursor (Global Rule)           -> $cursorRulePath" -ForegroundColor DarkCyan
+}
+
+# [8] Zed: %APPDATA%/Zed/AGENTS.md + settings.json slash command
+if ($selected -contains 8) {
+    $zedRulePath = Join-Path $zedDir "AGENTS.md"
+    Inject-DelimitedRule $zedRulePath $sddRuleBlock
+    Write-Host "    [OK] Zed (Global Rule)              -> $zedRulePath" -ForegroundColor DarkCyan
+
+    $zedSettingsPath = Join-Path $zedDir "settings.json"
+    Inject-ZedSlashCommand $zedSettingsPath
+    Write-Host "    [OK] Zed (/sdd Slash Command)       -> $zedSettingsPath" -ForegroundColor DarkCyan
 }
 
 # 8. Completion Banner
