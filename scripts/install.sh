@@ -30,7 +30,65 @@ fi
 # 3. Resolve Home Directory
 HOME_DIR="${HOME:-$USERPROFILE}"
 
-# 4. Ingest Global Cursor Rule (~/.cursor/rules/sdd.mdc)
+# 4. Universal Agent Skill Definition
+SKILL_CONTENT='---
+name: sdd
+description: "Spec-Driven Development (SDD) autonomous lifecycle. Triggers on project creation, feature development, bug fixes, or when SDD is mentioned."
+---
+
+# Spec-Driven Development (SDD) Autonomous AI Protocol
+
+You are an expert software architect practicing Spec-Driven Development (SDD).
+
+## Lifecycle Rules
+
+1. **Bootstrap & Inspection**:
+   - Check if `openspec/` exists in the root of the workspace.
+   - If `openspec/` does NOT exist, autonomously execute `sdd init` in the background using your terminal tool before writing any project code.
+
+2. **Feature & Change Initialization**:
+   - When the user asks for a new feature, bug fix, or refactor, autonomously run:
+     `sdd new <feature-hyphenated-name>`
+   - This scaffolds the change directory under `openspec/changes/<feature-hyphenated-name>/`.
+
+3. **Phase Progression (Spec-First)**:
+   - **Proposal**: Fill `proposal.md` with intent, scope, capabilities, and risks.
+   - **Specs**: Write testable scenarios in `specs.md` using GIVEN/WHEN/THEN format.
+   - **Design**: Define architecture decisions and target file modifications in `design.md`.
+   - **Tasks**: Create clear checklists in `tasks.md`.
+   - NEVER start coding before specifications and tasks are defined.
+
+4. **Implementation & Verification**:
+   - Write code according to `tasks.md`.
+   - Run verification and tests (`sdd status` to check progress).'
+
+# 5. Provision Universal Skills across 7 Target AI Environments
+SKILL_TARGETS=(
+    "$HOME_DIR/.gemini/config/skills/sdd"
+    "$HOME_DIR/.gemini/skills/sdd"
+    "$HOME_DIR/.codex/skills/sdd"
+    "$HOME_DIR/.copilot/skills/sdd"
+    "$HOME_DIR/.config/opencode/skills/sdd"
+    "$HOME_DIR/.claude/skills/sdd"
+    "$HOME_DIR/.cursor/skills/sdd"
+)
+
+echo -e "\n\033[32m--> Provisioning global SDD skills across 7 AI environments...\033[0m"
+
+for target in "${SKILL_TARGETS[@]}"; do
+    mkdir -p "$target"
+    echo "$SKILL_CONTENT" > "$target/SKILL.md"
+done
+
+echo -e "\033[36m    [OK] Antigravity 2.0   (~/.gemini/config/skills/sdd/SKILL.md)\033[0m"
+echo -e "\033[36m    [OK] Antigravity CLI  (~/.gemini/skills/sdd/SKILL.md)\033[0m"
+echo -e "\033[36m    [OK] Codex            (~/.codex/skills/sdd/SKILL.md)\033[0m"
+echo -e "\033[36m    [OK] VS Code Copilot  (~/.copilot/skills/sdd/SKILL.md)\033[0m"
+echo -e "\033[36m    [OK] OpenCode         (~/.config/opencode/skills/sdd/SKILL.md)\033[0m"
+echo -e "\033[36m    [OK] Claude Code      (~/.claude/skills/sdd/SKILL.md)\033[0m"
+echo -e "\033[36m    [OK] Cursor           (~/.cursor/skills/sdd/SKILL.md)\033[0m"
+
+# 6. Ingest Specialized Cursor Rule (~/.cursor/rules/sdd.mdc)
 CURSOR_DIR="$HOME_DIR/.cursor/rules"
 mkdir -p "$CURSOR_DIR"
 
@@ -51,9 +109,9 @@ When the user asks to create a project, develop a feature, or use Spec-Driven De
 5. Never vibe-code: wait for user approval on specifications before touching code.
 EOF
 
-echo -e "\033[32m--> Provisioned global Cursor rule: $CURSOR_DIR/sdd.mdc\033[0m"
+echo -e "\033[36m    [OK] Cursor Rule      (~/.cursor/rules/sdd.mdc)\033[0m"
 
-# 5. Ingest Global Claude Code Command (~/.claude/commands/sdd.md)
+# 7. Ingest Specialized Claude Code Command (~/.claude/commands/sdd.md)
 CLAUDE_DIR="$HOME_DIR/.claude/commands"
 mkdir -p "$CLAUDE_DIR"
 
@@ -64,14 +122,20 @@ If a change name is given as an argument, run 'sdd new "$@"' in the background.
 Always follow the proposal, specs, design, and tasks phases before writing code.
 EOF
 
-echo -e "\033[32m--> Provisioned global Claude Code command: $CLAUDE_DIR/sdd.md\033[0m"
+echo -e "\033[36m    [OK] Claude Command   (~/.claude/commands/sdd.md)\033[0m"
 
-# 6. Completion Banner
+# 8. Completion Banner
 echo -e "\n\033[36m=========================================\033[0m"
 echo -e "\033[32m   Installation complete! You're ready!  \033[0m"
 echo -e "\033[36m=========================================\033[0m"
-echo -e "\nYour AI assistant in Cursor and Claude Code is now trained to handle SDD."
-echo -e "You can now open any project and type in the chat:"
+echo -e "\nNatively configured for:"
+echo -e "  - Antigravity 2.0 & Antigravity CLI"
+echo -e "  - OpenAI Codex"
+echo -e "  - GitHub Copilot (VS Code)"
+echo -e "  - OpenCode"
+echo -e "  - Claude Code"
+echo -e "  - Cursor"
+echo -e "\nYou can now open any project in your preferred editor and type in the chat:"
 echo -e "  \033[33m> 'Quiero iniciar un proyecto con SDD'\033[0m"
 echo -e "  \033[33m> or use the slash command: /sdd <feature-name>\033[0m"
 echo -e "\n\033[32mZero terminal required from now on!\033[0m\n"

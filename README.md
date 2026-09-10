@@ -25,7 +25,15 @@ When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Win
 
 ### 🚀 Option 1: One-Line Universal Install (Recommended)
 
-Installs the CLI globally **AND** automatically configures global SDD rules and slash commands (`/sdd`) for Cursor and Claude Code in seconds:
+Installs the CLI globally **AND** automatically configures global SDD skills and rules across **7 major AI environments**:
+
+- **Antigravity 2.0** (`~/.gemini/config/skills/sdd/`)
+- **Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/`)
+- **OpenAI Codex** (`~/.codex/skills/sdd/`)
+- **GitHub Copilot (VS Code)** (`~/.copilot/skills/sdd/`)
+- **OpenCode** (`~/.config/opencode/skills/sdd/`)
+- **Claude Code** (`~/.claude/skills/sdd/` + commands)
+- **Cursor** (`~/.cursor/skills/sdd/` + rules)
 
 **Windows (PowerShell):**
 ```powershell
@@ -37,7 +45,7 @@ irm https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/install.ps1 
 curl -fsSL https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/install.sh | bash
 ```
 
-Once installed, open any project and type in your editor chat:
+Once installed, open any project in your preferred editor/agent and type in chat:
 - `"Quiero empezar este proyecto con SDD"`
 - Or use the slash command: `/sdd <feature-name>`
 
