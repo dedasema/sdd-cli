@@ -19,6 +19,9 @@ The installer scripts MUST provision universal `SKILL.md` configurations exclusi
 6. **Claude Code**: `~/.claude/skills/sdd/SKILL.md` and `~/.claude/commands/sdd.md`
 7. **Cursor**: `~/.cursor/rules/sdd.mdc` and `~/.cursor/skills/sdd/SKILL.md`
 
+### Requirement: Interactive Environment Selection
+The installer and uninstaller scripts MUST prompt the user with an interactive menu to choose which of the 7 environments to configure or remove (supporting comma/space-separated numbers `1-7`), defaulting to configuring all environments if the user enters `A` or presses Enter without input.
+
 ### Requirement: Zero Terminal Intervention Post-Installation
 The provisioned skills and rules MUST instruct each AI assistant to autonomously detect `openspec/`, run `sdd init` in the background when missing, and run `sdd new <feature>` for each new change without requiring manual developer terminal commands.
 

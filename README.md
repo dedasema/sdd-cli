@@ -25,15 +25,16 @@ When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Win
 
 ### 🚀 Option 1: One-Line Universal Install (Recommended)
 
-Installs the CLI globally **AND** automatically configures global SDD skills and rules across **7 major AI environments**:
+Installs the CLI globally **AND** interactively prompts you to choose which AI environments to configure (or install all with `A`):
 
-- **Antigravity 2.0** (`~/.gemini/config/skills/sdd/`)
-- **Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/`)
-- **OpenAI Codex** (`~/.codex/skills/sdd/`)
-- **GitHub Copilot (VS Code)** (`~/.copilot/skills/sdd/`)
-- **OpenCode** (`~/.config/opencode/skills/sdd/`)
-- **Claude Code** (`~/.claude/skills/sdd/` + commands)
-- **Cursor** (`~/.cursor/skills/sdd/` + rules)
+- **[1] Antigravity 2.0** (`~/.gemini/config/skills/sdd/`)
+- **[2] Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/`)
+- **[3] OpenAI Codex** (`~/.codex/skills/sdd/`)
+- **[4] GitHub Copilot (VS Code)** (`~/.copilot/skills/sdd/`)
+- **[5] OpenCode** (`~/.config/opencode/skills/sdd/`)
+- **[6] Claude Code** (`~/.claude/skills/sdd/` + `/sdd` command)
+- **[7] Cursor** (`~/.cursor/skills/sdd/` + `.mdc` rule)
+- **[A] All environments** (Default — just press Enter)
 
 **Windows (PowerShell):**
 ```powershell
@@ -108,7 +109,7 @@ Scans `openspec/changes/` and parses `tasks.md` files to display a visual comple
 
 ## Uninstallation
 
-To completely remove the SDD CLI and purge all globally provisioned skills, rules, and commands across all 7 AI environments:
+To remove the SDD CLI and selectively or completely purge globally provisioned skills, rules, and commands:
 
 **Windows (PowerShell):**
 ```powershell

@@ -30,7 +30,43 @@ fi
 # 3. Resolve Home Directory
 HOME_DIR="${HOME:-$USERPROFILE}"
 
-# 4. Universal Agent Skill Definition
+# 4. Interactive Agent / IDE Selection Menu
+echo -e "\n\033[36mSelect AI environments to configure:\033[0m"
+echo "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd)"
+echo "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd)"
+echo "  [3] OpenAI Codex            (~/.codex/skills/sdd)"
+echo "  [4] GitHub Copilot (VS Code)(~/.copilot/skills/sdd)"
+echo "  [5] OpenCode                (~/.config/opencode/skills/sdd)"
+echo "  [6] Claude Code             (~/.claude/skills/sdd + /sdd command)"
+echo "  [7] Cursor                  (~/.cursor/skills/sdd + .mdc rule)"
+echo "  [A] All environments       (Default - press Enter)"
+
+RAW_CHOICE=""
+if [ -c /dev/tty ]; then
+    printf "\nChoice(s) [e.g. 1,6,7 or A (Default)]: "
+    read -r RAW_CHOICE < /dev/tty || true
+elif [ -t 0 ]; then
+    printf "\nChoice(s) [e.g. 1,6,7 or A (Default)]: "
+    read -r RAW_CHOICE || true
+fi
+
+# Parse user choice
+if [ -z "$RAW_CHOICE" ] || [ "$RAW_CHOICE" = "A" ] || [ "$RAW_CHOICE" = "a" ]; then
+    SELECTED="1 2 3 4 5 6 7"
+else
+    CLEANED=$(echo "$RAW_CHOICE" | tr ',' ' ')
+    SELECTED=""
+    for num in $CLEANED; do
+        case "$num" in
+            1|2|3|4|5|6|7) SELECTED="$SELECTED $num" ;;
+        esac
+    done
+    if [ -z "$SELECTED" ]; then
+        SELECTED="1 2 3 4 5 6 7"
+    fi
+fi
+
+# 5. Universal Agent Skill Definition
 SKILL_CONTENT='---
 name: sdd
 description: "Spec-Driven Development (SDD) autonomous lifecycle. Triggers on project creation, feature development, bug fixes, or when SDD is mentioned."
@@ -62,37 +98,67 @@ You are an expert software architect practicing Spec-Driven Development (SDD).
    - Write code according to `tasks.md`.
    - Run verification and tests (`sdd status` to check progress).'
 
-# 5. Provision Universal Skills across 7 Target AI Environments
-SKILL_TARGETS=(
-    "$HOME_DIR/.gemini/config/skills/sdd"
-    "$HOME_DIR/.gemini/skills/sdd"
-    "$HOME_DIR/.codex/skills/sdd"
-    "$HOME_DIR/.copilot/skills/sdd"
-    "$HOME_DIR/.config/opencode/skills/sdd"
-    "$HOME_DIR/.claude/skills/sdd"
-    "$HOME_DIR/.cursor/skills/sdd"
-)
+echo -e "\n\033[32m--> Provisioning selected SDD skills...\033[0m"
 
-echo -e "\n\033[32m--> Provisioning global SDD skills across 7 AI environments...\033[0m"
+for item in $SELECTED; do
+    case "$item" in
+        1)
+            target="$HOME_DIR/.gemini/config/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] Antigravity 2.0   -> $target/SKILL.md\033[0m"
+            ;;
+        2)
+            target="$HOME_DIR/.gemini/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] Antigravity CLI  -> $target/SKILL.md\033[0m"
+            ;;
+        3)
+            target="$HOME_DIR/.codex/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] OpenAI Codex     -> $target/SKILL.md\033[0m"
+            ;;
+        4)
+            target="$HOME_DIR/.copilot/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] GitHub Copilot   -> $target/SKILL.md\033[0m"
+            ;;
+        5)
+            target="$HOME_DIR/.config/opencode/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] OpenCode         -> $target/SKILL.md\033[0m"
+            ;;
+        6)
+            target="$HOME_DIR/.claude/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] Claude Code      -> $target/SKILL.md\033[0m"
 
-for target in "${SKILL_TARGETS[@]}"; do
-    mkdir -p "$target"
-    echo "$SKILL_CONTENT" > "$target/SKILL.md"
-done
+            # Ingest Specialized Claude Code Command
+            CLAUDE_DIR="$HOME_DIR/.claude/commands"
+            mkdir -p "$CLAUDE_DIR"
+            cat << 'EOF' > "$CLAUDE_DIR/sdd.md"
+Execute the Spec-Driven Development (SDD) lifecycle in this project.
+If 'openspec/' does not exist, run 'sdd init' via the terminal tool to bootstrap the environment.
+If a change name is given as an argument, run 'sdd new "$@"' in the background.
+Always follow the proposal, specs, design, and tasks phases before writing code.
+EOF
+            echo -e "\033[36m    [OK] Claude Command   -> $CLAUDE_DIR/sdd.md\033[0m"
+            ;;
+        7)
+            target="$HOME_DIR/.cursor/skills/sdd"
+            mkdir -p "$target"
+            echo "$SKILL_CONTENT" > "$target/SKILL.md"
+            echo -e "\033[36m    [OK] Cursor           -> $target/SKILL.md\033[0m"
 
-echo -e "\033[36m    [OK] Antigravity 2.0   (~/.gemini/config/skills/sdd/SKILL.md)\033[0m"
-echo -e "\033[36m    [OK] Antigravity CLI  (~/.gemini/skills/sdd/SKILL.md)\033[0m"
-echo -e "\033[36m    [OK] Codex            (~/.codex/skills/sdd/SKILL.md)\033[0m"
-echo -e "\033[36m    [OK] VS Code Copilot  (~/.copilot/skills/sdd/SKILL.md)\033[0m"
-echo -e "\033[36m    [OK] OpenCode         (~/.config/opencode/skills/sdd/SKILL.md)\033[0m"
-echo -e "\033[36m    [OK] Claude Code      (~/.claude/skills/sdd/SKILL.md)\033[0m"
-echo -e "\033[36m    [OK] Cursor           (~/.cursor/skills/sdd/SKILL.md)\033[0m"
-
-# 6. Ingest Specialized Cursor Rule (~/.cursor/rules/sdd.mdc)
-CURSOR_DIR="$HOME_DIR/.cursor/rules"
-mkdir -p "$CURSOR_DIR"
-
-cat << 'EOF' > "$CURSOR_DIR/sdd.mdc"
+            # Ingest Specialized Cursor Rule
+            CURSOR_DIR="$HOME_DIR/.cursor/rules"
+            mkdir -p "$CURSOR_DIR"
+            cat << 'EOF' > "$CURSOR_DIR/sdd.mdc"
 ---
 description: Spec-Driven Development (SDD) Autonomous AI Protocol
 globs: *
@@ -108,34 +174,17 @@ When the user asks to create a project, develop a feature, or use Spec-Driven De
 4. Fill in the proposal, specs (Given/When/Then), design, and tasks before implementing code.
 5. Never vibe-code: wait for user approval on specifications before touching code.
 EOF
-
-echo -e "\033[36m    [OK] Cursor Rule      (~/.cursor/rules/sdd.mdc)\033[0m"
-
-# 7. Ingest Specialized Claude Code Command (~/.claude/commands/sdd.md)
-CLAUDE_DIR="$HOME_DIR/.claude/commands"
-mkdir -p "$CLAUDE_DIR"
-
-cat << 'EOF' > "$CLAUDE_DIR/sdd.md"
-Execute the Spec-Driven Development (SDD) lifecycle in this project.
-If 'openspec/' does not exist, run 'sdd init' via the terminal tool to bootstrap the environment.
-If a change name is given as an argument, run 'sdd new "$@"' in the background.
-Always follow the proposal, specs, design, and tasks phases before writing code.
-EOF
-
-echo -e "\033[36m    [OK] Claude Command   (~/.claude/commands/sdd.md)\033[0m"
+            echo -e "\033[36m    [OK] Cursor Rule      -> $CURSOR_DIR/sdd.mdc\033[0m"
+            ;;
+    esac
+done
 
 # 8. Completion Banner
 echo -e "\n\033[36m=========================================\033[0m"
 echo -e "\033[32m   Installation complete! You're ready!  \033[0m"
 echo -e "\033[36m=========================================\033[0m"
-echo -e "\nNatively configured for:"
-echo -e "  - Antigravity 2.0 & Antigravity CLI"
-echo -e "  - OpenAI Codex"
-echo -e "  - GitHub Copilot (VS Code)"
-echo -e "  - OpenCode"
-echo -e "  - Claude Code"
-echo -e "  - Cursor"
-echo -e "\nYou can now open any project in your preferred editor and type in the chat:"
+echo -e "\nYour selected AI environment(s) are now trained to handle SDD."
+echo -e "Open any project in your chosen editor and type in chat:"
 echo -e "  \033[33m> 'Quiero iniciar un proyecto con SDD'\033[0m"
 echo -e "  \033[33m> or use the slash command: /sdd <feature-name>\033[0m"
 echo -e "\n\033[32mZero terminal required from now on!\033[0m\n"

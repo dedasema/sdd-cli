@@ -34,7 +34,30 @@ if ($pnpmCmd) {
 $homeDir = $env:USERPROFILE
 if (-not $homeDir) { $homeDir = $HOME }
 
-# 4. Universal Agent Skill Definition
+# 4. Interactive Agent / IDE Selection Menu
+Write-Host "`nSelect AI environments to configure:" -ForegroundColor Cyan
+Write-Host "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd)"
+Write-Host "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd)"
+Write-Host "  [3] OpenAI Codex            (~/.codex/skills/sdd)"
+Write-Host "  [4] GitHub Copilot (VS Code)(~/.copilot/skills/sdd)"
+Write-Host "  [5] OpenCode                (~/.config/opencode/skills/sdd)"
+Write-Host "  [6] Claude Code             (~/.claude/skills/sdd + /sdd command)"
+Write-Host "  [7] Cursor                  (~/.cursor/skills/sdd + .mdc rule)"
+Write-Host "  [A] All environments       (Default - press Enter)"
+
+$rawChoice = Read-Host "`nChoice(s) [e.g. 1,6,7 or A (Default)]"
+
+$tokens = $rawChoice -split '[, ]' | Where-Object { $_ -ne '' }
+if (-not $tokens -or $tokens -contains 'A' -or $tokens -contains 'a') {
+    $selected = @(1, 2, 3, 4, 5, 6, 7)
+} else {
+    $selected = @($tokens | Where-Object { $_ -match '^[1-7]$' } | ForEach-Object { [int]$_ })
+    if ($selected.Count -eq 0) {
+        $selected = @(1, 2, 3, 4, 5, 6, 7)
+    }
+}
+
+# 5. Universal Agent Skill Definition
 $skillContent = @'
 ---
 name: sdd
@@ -68,43 +91,57 @@ You are an expert software architect practicing Spec-Driven Development (SDD).
    - Run verification and tests (`sdd status` to check progress).
 '@
 
-# 5. Provision Universal Skills across 7 Target AI Environments
-$skillTargets = @(
-    (Join-Path $homeDir ".gemini\config\skills\sdd"),  # Antigravity 2.0
-    (Join-Path $homeDir ".gemini\skills\sdd"),         # Antigravity CLI (agy)
-    (Join-Path $homeDir ".codex\skills\sdd"),          # Codex
-    (Join-Path $homeDir ".copilot\skills\sdd"),        # VS Code Copilot
-    (Join-Path $homeDir ".config\opencode\skills\sdd"),# OpenCode
-    (Join-Path $homeDir ".claude\skills\sdd"),         # Claude Code
-    (Join-Path $homeDir ".cursor\skills\sdd")          # Cursor
-)
+Write-Host "`n--> Provisioning selected SDD skills..." -ForegroundColor Green
 
-Write-Host "`n--> Provisioning global SDD skills across 7 AI environments..." -ForegroundColor Green
+# Target definitions mapping
+$envMap = @{
+    1 = @{ Name = "Antigravity 2.0";  Path = (Join-Path $homeDir ".gemini\config\skills\sdd") }
+    2 = @{ Name = "Antigravity CLI"; Path = (Join-Path $homeDir ".gemini\skills\sdd") }
+    3 = @{ Name = "OpenAI Codex";    Path = (Join-Path $homeDir ".codex\skills\sdd") }
+    4 = @{ Name = "GitHub Copilot";  Path = (Join-Path $homeDir ".copilot\skills\sdd") }
+    5 = @{ Name = "OpenCode";        Path = (Join-Path $homeDir ".config\opencode\skills\sdd") }
+    6 = @{ Name = "Claude Code";     Path = (Join-Path $homeDir ".claude\skills\sdd") }
+    7 = @{ Name = "Cursor";          Path = (Join-Path $homeDir ".cursor\skills\sdd") }
+}
 
-foreach ($target in $skillTargets) {
-    if (-not (Test-Path $target)) {
-        New-Item -ItemType Directory -Path $target -Force | Out-Null
+foreach ($key in $selected) {
+    if ($envMap.ContainsKey($key)) {
+        $envInfo = $envMap[$key]
+        $dir = $envInfo.Path
+        if (-not (Test-Path $dir)) {
+            New-Item -ItemType Directory -Path $dir -Force | Out-Null
+        }
+        $skillPath = Join-Path $dir "SKILL.md"
+        Set-Content -Path $skillPath -Value $skillContent -Encoding UTF8
+        Write-Host "    [OK] $($envInfo.Name) -> $skillPath" -ForegroundColor DarkCyan
     }
-    $skillPath = Join-Path $target "SKILL.md"
-    Set-Content -Path $skillPath -Value $skillContent -Encoding UTF8
 }
 
-Write-Host "    [OK] Antigravity 2.0   (~/.gemini/config/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-Write-Host "    [OK] Antigravity CLI  (~/.gemini/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-Write-Host "    [OK] Codex            (~/.codex/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-Write-Host "    [OK] VS Code Copilot  (~/.copilot/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-Write-Host "    [OK] OpenCode         (~/.config/opencode/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-Write-Host "    [OK] Claude Code      (~/.claude/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-Write-Host "    [OK] Cursor           (~/.cursor/skills/sdd/SKILL.md)" -ForegroundColor DarkCyan
-
-# 6. Ingest Specialized Cursor Rule (~/.cursor/rules/sdd.mdc)
-$cursorDir = Join-Path $homeDir ".cursor\rules"
-if (-not (Test-Path $cursorDir)) {
-    New-Item -ItemType Directory -Path $cursorDir -Force | Out-Null
+# 6. Ingest Specialized Claude Code Command (~/.claude/commands/sdd.md) if Claude Code selected
+if ($selected -contains 6) {
+    $claudeDir = Join-Path $homeDir ".claude\commands"
+    if (-not (Test-Path $claudeDir)) {
+        New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+    }
+    $claudeCmdPath = Join-Path $claudeDir "sdd.md"
+    $claudeCmdContent = @'
+Execute the Spec-Driven Development (SDD) lifecycle in this project.
+If 'openspec/' does not exist, run 'sdd init' via the terminal tool to bootstrap the environment.
+If a change name is given as an argument, run 'sdd new $ARGUMENTS'.
+Always follow the proposal, specs, design, and tasks phases before writing code.
+'@
+    Set-Content -Path $claudeCmdPath -Value $claudeCmdContent -Encoding UTF8
+    Write-Host "    [OK] Claude Command   -> $claudeCmdPath" -ForegroundColor DarkCyan
 }
 
-$cursorRulePath = Join-Path $cursorDir "sdd.mdc"
-$cursorRuleContent = @'
+# 7. Ingest Specialized Cursor Rule (~/.cursor/rules/sdd.mdc) if Cursor selected
+if ($selected -contains 7) {
+    $cursorDir = Join-Path $homeDir ".cursor\rules"
+    if (-not (Test-Path $cursorDir)) {
+        New-Item -ItemType Directory -Path $cursorDir -Force | Out-Null
+    }
+    $cursorRulePath = Join-Path $cursorDir "sdd.mdc"
+    $cursorRuleContent = @'
 ---
 description: Spec-Driven Development (SDD) Autonomous AI Protocol
 globs: *
@@ -120,39 +157,16 @@ When the user asks to create a project, develop a feature, or use Spec-Driven De
 4. Fill in the proposal, specs (Given/When/Then), design, and tasks before implementing code.
 5. Never vibe-code: wait for user approval on specifications before touching code.
 '@
-
-Set-Content -Path $cursorRulePath -Value $cursorRuleContent -Encoding UTF8
-Write-Host "    [OK] Cursor Rule      (~/.cursor/rules/sdd.mdc)" -ForegroundColor DarkCyan
-
-# 7. Ingest Specialized Claude Code Command (~/.claude/commands/sdd.md)
-$claudeDir = Join-Path $homeDir ".claude\commands"
-if (-not (Test-Path $claudeDir)) {
-    New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
+    Set-Content -Path $cursorRulePath -Value $cursorRuleContent -Encoding UTF8
+    Write-Host "    [OK] Cursor Rule      -> $cursorRulePath" -ForegroundColor DarkCyan
 }
-
-$claudeCmdPath = Join-Path $claudeDir "sdd.md"
-$claudeCmdContent = @'
-Execute the Spec-Driven Development (SDD) lifecycle in this project.
-If 'openspec/' does not exist, run 'sdd init' via the terminal tool to bootstrap the environment.
-If a change name is given as an argument, run 'sdd new $ARGUMENTS'.
-Always follow the proposal, specs, design, and tasks phases before writing code.
-'@
-
-Set-Content -Path $claudeCmdPath -Value $claudeCmdContent -Encoding UTF8
-Write-Host "    [OK] Claude Command   (~/.claude/commands/sdd.md)" -ForegroundColor DarkCyan
 
 # 8. Completion Banner
 Write-Host "`n=========================================" -ForegroundColor Cyan
 Write-Host "   Installation complete! You're ready!  " -ForegroundColor Green
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "`nNatively configured for:"
-Write-Host "  - Antigravity 2.0 & Antigravity CLI"
-Write-Host "  - OpenAI Codex"
-Write-Host "  - GitHub Copilot (VS Code)"
-Write-Host "  - OpenCode"
-Write-Host "  - Claude Code"
-Write-Host "  - Cursor"
-Write-Host "`nYou can now open any project in your preferred editor and type in the chat:"
+Write-Host "`nYour selected AI environment(s) are now trained to handle SDD."
+Write-Host "Open any project in your chosen editor and type in chat:"
 Write-Host "  > 'Quiero iniciar un proyecto con SDD'" -ForegroundColor Yellow
 Write-Host "  > or use the slash command: /sdd <feature-name>" -ForegroundColor Yellow
-Write-Host "`nZero terminal required from now on!" -ForegroundColor Green
+Write-Host "`nZero terminal required from now on!`n" -ForegroundColor Green

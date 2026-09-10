@@ -11,54 +11,84 @@ Write-Host "=========================================" -ForegroundColor Cyan
 $homeDir = $env:USERPROFILE
 if (-not $homeDir) { $homeDir = $HOME }
 
-# 2. Skill directories to purge
-$skillTargets = @(
-    (Join-Path $homeDir ".gemini\config\skills\sdd"),  # Antigravity 2.0
-    (Join-Path $homeDir ".gemini\skills\sdd"),         # Antigravity CLI
-    (Join-Path $homeDir ".codex\skills\sdd"),          # Codex
-    (Join-Path $homeDir ".copilot\skills\sdd"),        # VS Code Copilot
-    (Join-Path $homeDir ".config\opencode\skills\sdd"),# OpenCode
-    (Join-Path $homeDir ".claude\skills\sdd"),         # Claude Code
-    (Join-Path $homeDir ".cursor\skills\sdd")          # Cursor
-)
+# 2. Interactive Selection Menu
+Write-Host "`nSelect AI environments to clean up:" -ForegroundColor Cyan
+Write-Host "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd)"
+Write-Host "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd)"
+Write-Host "  [3] OpenAI Codex            (~/.codex/skills/sdd)"
+Write-Host "  [4] GitHub Copilot (VS Code)(~/.copilot/skills/sdd)"
+Write-Host "  [5] OpenCode                (~/.config/opencode/skills/sdd)"
+Write-Host "  [6] Claude Code             (~/.claude/skills/sdd + /sdd command)"
+Write-Host "  [7] Cursor                  (~/.cursor/skills/sdd + .mdc rule)"
+Write-Host "  [A] All environments       (Default - press Enter)"
 
-Write-Host "`n--> Removing global SDD skills across 7 AI environments..." -ForegroundColor Yellow
+$rawChoice = Read-Host "`nChoice(s) to remove [e.g. 1,6,7 or A (Default)]"
 
-foreach ($target in $skillTargets) {
-    if (Test-Path $target) {
-        Remove-Item -Path $target -Recurse -Force -ErrorAction SilentlyContinue
-        Write-Host "    [REMOVED] $target" -ForegroundColor DarkYellow
-    }
-}
-
-# 3. Specialized rule and command files to purge
-$fileTargets = @(
-    (Join-Path $homeDir ".cursor\rules\sdd.mdc"),
-    (Join-Path $homeDir ".claude\commands\sdd.md")
-)
-
-foreach ($file in $fileTargets) {
-    if (Test-Path $file) {
-        Remove-Item -Path $file -Force -ErrorAction SilentlyContinue
-        Write-Host "    [REMOVED] $file" -ForegroundColor DarkYellow
-    }
-}
-
-# 4. Uninstall global CLI package
-Write-Host "`n--> Uninstalling @dedasema/sdd-cli package..." -ForegroundColor Yellow
-
-$pnpmCmd = Get-Command pnpm -ErrorAction SilentlyContinue
-$npmCmd = Get-Command npm -ErrorAction SilentlyContinue
-
-if ($pnpmCmd) {
-    pnpm rm -g @dedasema/sdd-cli 2>$null
-} elseif ($npmCmd) {
-    npm uninstall -g @dedasema/sdd-cli 2>$null
+$tokens = $rawChoice -split '[, ]' | Where-Object { $_ -ne '' }
+if (-not $tokens -or $tokens -contains 'A' -or $tokens -contains 'a') {
+    $selected = @(1, 2, 3, 4, 5, 6, 7)
 } else {
-    Write-Host "    [NOTE] Neither pnpm nor npm was found to uninstall global package." -ForegroundColor DarkGray
+    $selected = @($tokens | Where-Object { $_ -match '^[1-7]$' } | ForEach-Object { [int]$_ })
+    if ($selected.Count -eq 0) {
+        $selected = @(1, 2, 3, 4, 5, 6, 7)
+    }
+}
+
+$envMap = @{
+    1 = @{ Name = "Antigravity 2.0";  Path = (Join-Path $homeDir ".gemini\config\skills\sdd") }
+    2 = @{ Name = "Antigravity CLI"; Path = (Join-Path $homeDir ".gemini\skills\sdd") }
+    3 = @{ Name = "OpenAI Codex";    Path = (Join-Path $homeDir ".codex\skills\sdd") }
+    4 = @{ Name = "GitHub Copilot";  Path = (Join-Path $homeDir ".copilot\skills\sdd") }
+    5 = @{ Name = "OpenCode";        Path = (Join-Path $homeDir ".config\opencode\skills\sdd") }
+    6 = @{ Name = "Claude Code";     Path = (Join-Path $homeDir ".claude\skills\sdd") }
+    7 = @{ Name = "Cursor";          Path = (Join-Path $homeDir ".cursor\skills\sdd") }
+}
+
+Write-Host "`n--> Removing selected SDD skills..." -ForegroundColor Yellow
+
+foreach ($key in $selected) {
+    if ($envMap.ContainsKey($key)) {
+        $envInfo = $envMap[$key]
+        $dir = $envInfo.Path
+        if (Test-Path $dir) {
+            Remove-Item -Path $dir -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "    [REMOVED] $($envInfo.Name) -> $dir" -ForegroundColor DarkYellow
+        }
+    }
+}
+
+# Remove Claude Code command if selected
+if ($selected -contains 6) {
+    $claudeCmd = Join-Path $homeDir ".claude\commands\sdd.md"
+    if (Test-Path $claudeCmd) {
+        Remove-Item -Path $claudeCmd -Force -ErrorAction SilentlyContinue
+        Write-Host "    [REMOVED] Claude Command -> $claudeCmd" -ForegroundColor DarkYellow
+    }
+}
+
+# Remove Cursor rule if selected
+if ($selected -contains 7) {
+    $cursorRule = Join-Path $homeDir ".cursor\rules\sdd.mdc"
+    if (Test-Path $cursorRule) {
+        Remove-Item -Path $cursorRule -Force -ErrorAction SilentlyContinue
+        Write-Host "    [REMOVED] Cursor Rule    -> $cursorRule" -ForegroundColor DarkYellow
+    }
+}
+
+# Uninstall package if all selected
+if ($selected.Count -eq 7) {
+    Write-Host "`n--> Uninstalling @dedasema/sdd-cli package..." -ForegroundColor Yellow
+    $pnpmCmd = Get-Command pnpm -ErrorAction SilentlyContinue
+    $npmCmd = Get-Command npm -ErrorAction SilentlyContinue
+
+    if ($pnpmCmd) {
+        pnpm rm -g @dedasema/sdd-cli 2>$null
+    } elseif ($npmCmd) {
+        npm uninstall -g @dedasema/sdd-cli 2>$null
+    }
 }
 
 Write-Host "`n=========================================" -ForegroundColor Cyan
-Write-Host "   Uninstallation complete! Clean slate. " -ForegroundColor Green
+Write-Host "   Cleanup complete!                     " -ForegroundColor Green
 Write-Host "=========================================" -ForegroundColor Cyan
-Write-Host "All global SDD skills, rules, and commands have been removed.`n"
+Write-Host "Selected SDD configurations have been removed.`n"
