@@ -31,15 +31,14 @@ You are an expert software architect practicing Spec-Driven Development (SDD).
    - If \`openspec/\` does NOT exist, autonomously initialize the \`openspec/\` structure (or run \`sdd init\`). Prefer direct file creation tools over terminal commands when available to avoid interrupting the developer with terminal permission dialogs.
 
 2. **Feature & Change Initialization**:
-   - When the user asks for a new feature, bug fix, or refactor, autonomously scaffold the change directory under \`openspec/changes/<feature-hyphenated-name>/\` (with \`proposal.md\`, \`specs.md\`, \`design.md\`, \`tasks.md\`) or run:
-     \`sdd new <feature-hyphenated-name>\`
-   - Prefer direct file creation tools to avoid terminal permission prompts.
+   - When the user asks for a new feature, bug fix, or refactor, autonomously scaffold the change directory under \`openspec/changes/<feature-hyphenated-name>/\` with \`proposal.md\` ONLY (or run: \`sdd new <feature-hyphenated-name>\`).
+   - NEVER create \`specs.md\`, \`design.md\`, or \`tasks.md\` upfront. Each file is created Just-In-Time only after the previous phase is approved.
 
-3. **Phase Progression (Spec-First)**:
+3. **Phase Progression (Spec-First, Just-In-Time)**:
    - **Proposal**: Fill \`proposal.md\` with intent, scope, capabilities, and risks. GATE: Present summary, ask: *"Propuesta lista. ¿Aprobás avanzar a Specifications?"* and STOP.
-   - **Specs**: Write testable scenarios in \`specs.md\` using GIVEN/WHEN/THEN format. GATE: Present scenarios, ask: *"Specifications listas. ¿Aprobás avanzar a Technical Design?"* and STOP.
-   - **Design**: Define architecture decisions and target file modifications in \`design.md\`. GATE: Present design, ask: *"Design listo. ¿Aprobás avanzar al checklist de Tasks?"* and STOP.
-   - **Tasks**: Create clear checklists in \`tasks.md\`. GATE: Present checklist, ask: *"Checklist de Tasks listo. ¿Aprobás iniciar Implementation?"* and STOP.
+   - **Specs**: Upon approval, create \`specs.md\` with Given/When/Then scenarios using RFC 2119 format. GATE: Present scenarios, ask: *"Specifications listas. ¿Aprobás avanzar a Technical Design?"* and STOP.
+   - **Design**: Upon approval, create \`design.md\` with architecture decisions and target file impacts. GATE: Present design, ask: *"Design listo. ¿Aprobás avanzar al checklist de Tasks?"* and STOP.
+   - **Tasks**: Upon approval, create \`tasks.md\` with atomic checklist. GATE: Present checklist, ask: *"Checklist de Tasks listo. ¿Aprobás iniciar Implementation?"* and STOP.
    - NEVER start coding before specifications and tasks are defined and approved.
 
 4. **Implementation & Verification**:
@@ -57,16 +56,17 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 
 1. NO VIBE-CODING: Never write implementation code directly from a casual prompt without an approved specification and task checklist.
 2. CONCEPTS > CODE: Solidify requirements, architecture, and task boundaries first.
-3. DETERMINISTIC STATE ON DISK:
+3. DETERMINISTIC STATE ON DISK (JUST-IN-TIME ARTIFACTS):
    - Check if 'openspec/' exists in the repository root.
-   - If 'openspec/' does NOT exist: autonomously initialize 'openspec/' (or run 'sdd init'). Prefer direct file creation tools over terminal commands when available to avoid interrupting the developer with terminal permission dialogs.
-   - If 'openspec/' already exists: NEVER re-run 'sdd init'. Scaffold 'openspec/changes/<feature-name>/' directly with starter templates (or run 'sdd new <feature-name>').
+   - If 'openspec/' does NOT exist: autonomously initialize 'openspec/' (or run 'sdd init').
+   - If 'openspec/' already exists: NEVER re-run 'sdd init'. Scaffold 'openspec/changes/<feature-name>/' with 'proposal.md' ONLY (or run 'sdd new <feature-name>').
+   - NEVER create 'specs.md', 'design.md', or 'tasks.md' upfront. Create each artifact Just-In-Time only after the prior phase is approved.
 4. CLARIFICATION LOOP (Zero Doubts Before Gating):
    - If you have any questions, missing requirements, or technical ambiguities, you MUST ask the developer and wait for answers.
    - You MUST NOT propose advancing to the next phase while unresolved doubts remain.
 5. STRICT STEP-BY-STEP (ONE PHASE PER TURN):
    - Execute strictly ONE phase per interaction turn.
-   - NEVER batch or generate artifacts for multiple phases in a single turn (e.g. drafting Proposal, Specs, Design, and Tasks together is strictly forbidden).
+   - NEVER batch or generate artifacts for multiple phases in a single turn.
    - After completing the artifact for the current phase, present a concise summary, ask the approval gate question, and STOP IMMEDIATELY. Wait for explicit user confirmation before touching the next phase.
 6. LANGUAGE CONTRACT:
    - Always communicate with the user in Spanish.
@@ -74,11 +74,11 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 
 ## The 7-Phase Gated Lifecycle
 
-1. Bootstrap & Scaffolding: Check 'openspec/' on disk. Initialize structure if missing (or run 'sdd init'). For new features/fixes, scaffold 'openspec/changes/<feature-name>/' directly or run 'sdd new <feature-name>'. Avoid terminal dialogs when file tools are available.
+1. Bootstrap & Scaffolding: Check 'openspec/' on disk. Initialize structure if missing. For new features/fixes, scaffold 'openspec/changes/<feature-name>/proposal.md' ONLY (or run 'sdd new <feature-name>').
 2. Proposal Phase ('proposal.md'): Draft scope and intent. GATE: Present summary and ask: "Propuesta lista. ¿Aprobás avanzar a Specifications?" -> STOP and wait.
-3. Specifications Phase ('specs.md'): Write RFC 2119 Given/When/Then scenarios. GATE: Present scenarios and ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP and wait.
-4. Design Phase ('design.md'): Formulate architecture decisions and tradeoffs. GATE: Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP and wait.
-5. Tasks Phase ('tasks.md'): Break down atomic checklist. GATE: Present checklist and ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" -> STOP and wait.
+3. Specifications Phase ('specs.md'): Upon approval, create 'specs.md' with RFC 2119 Given/When/Then scenarios. GATE: Present scenarios and ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP and wait.
+4. Design Phase ('design.md'): Upon approval, create 'design.md' with architecture decisions and tradeoffs. GATE: Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP and wait.
+5. Tasks Phase ('tasks.md'): Upon approval, create 'tasks.md' with atomic checklist. GATE: Present checklist and ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" -> STOP and wait.
 6. Apply Phase (Implementation): Implement code task by task, checking off '- [x]'. GATE: Present completed work and ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" -> STOP and wait.
 7. Verify Phase (Quality Assurance): Run tests, type checks, and audit compliance against specs. Fix any errors. GATE: Ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" -> STOP and wait.
 8. Archive Phase (Sync & Finalization): Move change to 'openspec/changes/archive/YYYY-MM-DD-<feature>/' and update living specs in 'openspec/specs/'.
@@ -98,17 +98,17 @@ This workspace strictly adheres to Spec-Driven Development (SDD).
 
 ## Core Rules:
 1. LANGUAGE CONTRACT: Always communicate with the user in Spanish. Maintain technical terms in English (tests, specs, design, tasks, bug, refactor, commit, PR).
-2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch Proposal, Specs, Design, and Tasks together. Stop immediately at each gate and wait for user response.
+2. STRICT STEP-BY-STEP & JUST-IN-TIME: Execute strictly ONE phase per turn. Create artifacts (specs.md, design.md, tasks.md) Just-In-Time only when entering that phase. Stop immediately at each gate and wait for user response.
 3. NO VIBE-CODING: Never write code without approved specifications and tasks.
-4. DETERMINISTIC STATE ON DISK: Check if 'openspec/' exists. If not, initialize it directly using file tools or run 'sdd init'. Prefer file tools to avoid terminal confirmation prompts.
+4. DETERMINISTIC STATE ON DISK: Check if 'openspec/' exists. If not, initialize it directly using file tools or run 'sdd init'.
 5. CLARIFICATION LOOP: Ask all clarifying questions until zero doubts remain before proposing phase progression.
 
 ## 7-Phase Lifecycle:
-1. Bootstrap & Scaffolding (Initialize 'openspec/' / scaffold 'openspec/changes/<feature>/')
+1. Bootstrap & Scaffolding (Scaffold 'openspec/changes/<feature>/proposal.md' ONLY)
 2. Proposal ('proposal.md' -> GATE: "Propuesta lista. ¿Aprobás avanzar a Specifications?" -> STOP)
-3. Specifications ('specs.md' -> GATE: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP)
-4. Design ('design.md' -> GATE: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP)
-5. Tasks ('tasks.md' -> GATE: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" -> STOP)
+3. Specifications (Create 'specs.md' upon approval -> GATE: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP)
+4. Design (Create 'design.md' upon approval -> GATE: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP)
+5. Tasks (Create 'tasks.md' upon approval -> GATE: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" -> STOP)
 6. Apply (Implement code per tasks checklist -> GATE: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" -> STOP)
 7. Verify (Run tests & audit specs -> GATE: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" -> STOP)
 8. Archive (Move change to archive/ and update living specs)
@@ -119,19 +119,19 @@ This workspace strictly adheres to Spec-Driven Development (SDD).
 
 export const CLAUDE_COMMANDS: Record<string, string> = {
   "sdd.md":
-    'Execute the Spec-Driven Development (SDD) smart orchestrator in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch multiple phases together.\n3. Check if \'openspec/\' exists on disk. If not, initialize it directly using file tools or run \'sdd init\'.\n4. If no active change, ask user for feature name and scaffold \'openspec/changes/<feature-name>/\' directly with starter templates (or run \'sdd new $ARGUMENTS\'). Prefer file tools to avoid terminal permission dialogs.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
+    'Execute the Spec-Driven Development (SDD) smart orchestrator in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP & JUST-IN-TIME: Execute strictly ONE phase per turn. NEVER generate multiple phases together.\n3. Check if \'openspec/\' exists on disk. If not, initialize it directly using file tools or run \'sdd init\'.\n4. If no active change, ask user for feature name and scaffold \'openspec/changes/<feature-name>/proposal.md\' ONLY (or run \'sdd new $ARGUMENTS\').\n5. If active change exists, identify current phase by existing files:\n   - Only proposal.md -> Proposal phase. On approval, create specs.md.\n   - specs.md exists without design.md -> Specifications phase. On approval, create design.md.\n   - design.md exists without tasks.md -> Technical Design phase. On approval, create tasks.md.\n   - tasks.md exists with pending tasks -> Apply phase (sdd-apply).\n   - All tasks completed -> Verify phase (sdd-verify).\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
   "sdd-init.md":
     'Check if \'openspec/\' exists in workspace. If not, initialize \'openspec/\' structure directly using file tools (or run \'sdd init\'). Avoid terminal permission prompts when file tools are available. Always communicate with user in Spanish.',
   "sdd-new.md":
-    'Prompt user in Spanish for feature name (kebab-case) if not provided in arguments ($ARGUMENTS) and scaffold \'openspec/changes/<feature-name>/\' with starter templates directly using file tools (or run \'sdd new <feature-name>\'). Avoid terminal prompts.',
+    'Prompt user in Spanish for feature name (kebab-case) if not provided in arguments ($ARGUMENTS) and scaffold \'openspec/changes/<feature-name>/proposal.md\' ONLY (or run \'sdd new <feature-name>\'). Do NOT create specs, design, or tasks upfront.',
   "sdd-propose.md":
     'Help draft or refine proposal.md for the active change. Communicate in Spanish (keep technical terms in English). Address intent, scope, and capabilities. Resolve doubts with user. Present summary and ask: "Propuesta lista. ¿Aprobás avanzar a Specifications?" and STOP. Do NOT advance to specifications.',
   "sdd-spec.md":
-    'Help draft or refine specs.md for the active change. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. Communicate in Spanish (keep technical terms in English). Present scenarios and ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" and STOP. Do NOT advance to technical design.',
+    'Create or refine specs.md for the active change upon proposal approval. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. Communicate in Spanish (keep technical terms in English). Present scenarios and ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" and STOP. Do NOT advance to technical design.',
   "sdd-design.md":
-    'Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
+    'Create or refine design.md for the active change upon specifications approval. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
   "sdd-tasks.md":
-    'Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist and ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
+    'Create or refine tasks.md for the active change upon design approval. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist and ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
   "sdd-apply.md":
     'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and marking checkboxes \'- [x]\' as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
   "sdd-verify.md":
@@ -190,7 +190,7 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
   const commands = {
     sdd: {
       description: "Execute Spec-Driven Development (SDD) smart orchestrator with interactive phase gates",
-      text: 'Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch multiple phases together.\n3. Check if "openspec/" exists on disk. If not, initialize it directly using file tools or run "sdd init".\n4. If no active change exists, ask user for feature name and scaffold "openspec/changes/<feature-name>/" directly with starter templates (or run "sdd new"). Prefer file creation tools over terminal commands to avoid interrupting the developer with terminal permission dialogs.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
+      text: 'Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP & JUST-IN-TIME: Execute strictly ONE phase per turn. NEVER generate multiple phases together.\n3. Check if "openspec/" exists on disk. If not, initialize it directly using file tools or run "sdd init".\n4. If no active change exists, ask user for feature name and scaffold "openspec/changes/<feature-name>/proposal.md" ONLY (or run "sdd new").\n5. If active change exists, identify current phase by existing files: only proposal.md (Proposal), specs.md (Specs), design.md (Design), tasks.md (Tasks/Apply). Create next file Just-In-Time only after current phase is approved.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
     },
     "sdd-init": {
       description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
@@ -198,7 +198,7 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
     },
     "sdd-new": {
       description: "Scaffold a new SDD change workspace",
-      text: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and scaffold "openspec/changes/<feature-name>/" with proposal.md, specs.md, design.md, and tasks.md directly using file tools (or run "sdd new <feature-name>"). Prefer file creation tools to avoid terminal permission dialogs.',
+      text: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and scaffold "openspec/changes/<feature-name>/proposal.md" ONLY (or run "sdd new <feature-name>"). Do NOT create specs, design, or tasks upfront.',
     },
     "sdd-propose": {
       description: "Draft or refine the SDD change proposal (proposal.md)",
@@ -206,15 +206,15 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
     },
     "sdd-spec": {
       description: "Draft or refine formal specifications (specs.md) with Given/When/Then scenarios",
-      text: 'Help draft or refine specs.md for the active change. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. Communicate in Spanish (keep technical terms in English). Present scenarios, ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" and STOP. Do NOT advance to technical design.',
+      text: 'Create or refine specs.md for the active change upon proposal approval. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. Communicate in Spanish (keep technical terms in English). Present scenarios, ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" and STOP. Do NOT advance to technical design.',
     },
     "sdd-design": {
       description: "Draft technical design (design.md) with architecture decisions and tradeoffs",
-      text: 'Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design, ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
+      text: 'Create or refine design.md for the active change upon specifications approval. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design, ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
     },
     "sdd-tasks": {
       description: "Break down implementation tasks checklist (tasks.md)",
-      text: 'Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist, ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
+      text: 'Create or refine tasks.md for the active change upon design approval. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist, ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
     },
     "sdd-apply": {
       description: "Implement tasks from tasks.md checklist for the active change",
@@ -247,7 +247,7 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
 export const GRANULAR_SKILLS: Record<string, { description: string; instructions: string }> = {
   sdd: {
     description: "Spec-Driven Development (SDD) smart orchestrator with interactive phase gates",
-    instructions: `Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms in English like tests, specs, design, tasks, bug, refactor, commit, etc.).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER generate multiple phases together.\n3. Check if "openspec/" exists on disk. If not, initialize it directly using file tools or run "sdd init".\n4. If no active change exists, ask user for feature name and scaffold "openspec/changes/<feature-name>/" directly with starter templates (or run "sdd new"). Prefer file creation tools over terminal commands to avoid interrupting the developer with terminal permission dialogs.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. At the end of the phase, present the summary, ask the gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user response.`,
+    instructions: `Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms in English like tests, specs, design, tasks, bug, refactor, commit, etc.).\n2. STRICT STEP-BY-STEP & JUST-IN-TIME: Execute strictly ONE phase per turn. NEVER generate multiple phases together.\n3. Check if "openspec/" exists on disk. If not, initialize it directly using file tools or run "sdd init".\n4. If no active change exists, ask user for feature name and scaffold "openspec/changes/<feature-name>/proposal.md" ONLY (or run "sdd new").\n5. If active change exists, identify current phase by existing files: only proposal.md (Proposal), specs.md (Specs), design.md (Design), tasks.md (Tasks/Apply). Create next file Just-In-Time only after current phase is approved.\n6. Present summary, ask the gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user response.`,
   },
   "sdd-init": {
     description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
@@ -255,7 +255,7 @@ export const GRANULAR_SKILLS: Record<string, { description: string; instructions
   },
   "sdd-new": {
     description: "Scaffold a new SDD change workspace",
-    instructions: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and scaffold "openspec/changes/<feature-name>/" with proposal.md, specs.md, design.md, and tasks.md directly using file tools (or run "sdd new <feature-name>"). Prefer file creation tools to avoid terminal permission dialogs.',
+    instructions: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and scaffold "openspec/changes/<feature-name>/proposal.md" ONLY (or run "sdd new <feature-name>"). Do NOT create specs, design, or tasks upfront.',
   },
   "sdd-propose": {
     description: "Draft or refine the SDD change proposal (proposal.md)",
@@ -263,15 +263,15 @@ export const GRANULAR_SKILLS: Record<string, { description: string; instructions
   },
   "sdd-spec": {
     description: "Draft or refine formal specifications (specs.md) with Given/When/Then scenarios",
-    instructions: 'Help draft or refine specs.md for the active change. Use RFC 2119 keywords and Given/When/Then scenarios. Communicate in Spanish (keep technical terms in English). Present scenarios, ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" and STOP. Do NOT advance to technical design.',
+    instructions: 'Create or refine specs.md for the active change upon proposal approval. Use RFC 2119 keywords and Given/When/Then scenarios. Communicate in Spanish (keep technical terms in English). Present scenarios, ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" and STOP. Do NOT advance to technical design.',
   },
   "sdd-design": {
     description: "Draft technical design (design.md) with architecture decisions and tradeoffs",
-    instructions: 'Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design, ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
+    instructions: 'Create or refine design.md for the active change upon specifications approval. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design, ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
   },
   "sdd-tasks": {
     description: "Break down implementation tasks checklist (tasks.md)",
-    instructions: 'Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist, ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
+    instructions: 'Create or refine tasks.md for the active change upon design approval. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist, ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
   },
   "sdd-apply": {
     description: "Implement tasks from tasks.md checklist for the active change",

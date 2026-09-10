@@ -27,19 +27,19 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 
 1. **Bootstrap & Scaffolding**:
    - Verify \`openspec/\` on disk. Initialize structure if missing.
-   - For any new feature or fix, autonomously execute \`sdd new <feature-name>\` in the background (or create \`openspec/changes/<feature-name>/\` directly via file tools without terminal popups).
+   - For any new feature or fix, autonomously execute \`sdd new <feature-name>\` in the background (or create \`openspec/changes/<feature-name>/proposal.md\` directly via file tools without terminal popups). ONLY \`proposal.md\` is created initially.
 2. **Proposal Phase (\`proposal.md\`)**:
    - Resolve requirements and scope with the user.
    - Draft \`proposal.md\`.
    - **GATE**: Present a concise summary and ask: *"Propuesta lista. ¿Aprobás avanzar a Specifications?"* -> **STOP and wait for user response**.
 3. **Specifications Phase (\`specs.md\`)**:
-   - Write testable requirements with RFC 2119 keywords (MUST, SHALL, SHOULD) and Given/When/Then scenarios.
+   - Upon approval of Proposal, create \`specs.md\` and write testable requirements with RFC 2119 keywords (MUST, SHALL, SHOULD) and Given/When/Then scenarios.
    - **GATE**: Present the scenarios and ask: *"Specifications listas. ¿Aprobás avanzar a Technical Design?"* -> **STOP and wait for user response**.
 4. **Design Phase (\`design.md\`)**:
-   - Formulate architectural decisions, tradeoffs, and file impacts.
+   - Upon approval of Specifications, create \`design.md\` and formulate architectural decisions, tradeoffs, and file impacts.
    - **GATE**: Present the design summary and ask: *"Design listo. ¿Aprobás avanzar al checklist de Tasks?"* -> **STOP and wait for user response**.
 5. **Tasks Phase (\`tasks.md\`)**:
-   - Break down implementation into an atomic, verifiable checklist with checkboxes.
+   - Upon approval of Design, create \`tasks.md\` and break down implementation into an atomic, verifiable checklist with checkboxes.
    - **GATE**: Present the checklist and ask: *"Checklist de Tasks listo. ¿Aprobás iniciar Implementation?"* -> **STOP and wait for user response**.
 6. **Apply Phase (Implementation)**:
    - Implement code task by task, marking checkboxes \`- [x]\` as work is completed.

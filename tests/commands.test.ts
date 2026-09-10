@@ -81,9 +81,9 @@ describe("SDD CLI Commands Integration", () => {
 
     const changeDir = path.join(tempDir, "openspec", "changes", "user-auth");
     expect(await fileExists(path.join(changeDir, "proposal.md"))).toBe(true);
-    expect(await fileExists(path.join(changeDir, "specs.md"))).toBe(true);
-    expect(await fileExists(path.join(changeDir, "design.md"))).toBe(true);
-    expect(await fileExists(path.join(changeDir, "tasks.md"))).toBe(true);
+    expect(await fileExists(path.join(changeDir, "specs.md"))).toBe(false);
+    expect(await fileExists(path.join(changeDir, "design.md"))).toBe(false);
+    expect(await fileExists(path.join(changeDir, "tasks.md"))).toBe(false);
 
     // Duplicate creation prevention
     const dupRes = await newCommand("user-auth", { cwd: tempDir, silent: true });

@@ -2,12 +2,7 @@ import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { ensureDir, fileExists, isKebabCase, writeFileSafe } from "../utils/fs.js";
-import {
-  getDesignTemplate,
-  getProposalTemplate,
-  getSpecsTemplate,
-  getTasksTemplate,
-} from "../templates/change.js";
+import { getProposalTemplate } from "../templates/change.js";
 
 export interface NewOptions {
   cwd?: string;
@@ -49,19 +44,16 @@ export async function newCommand(
   // 2. Create change folder
   await ensureDir(changeDir);
 
-  // 3. Populate standard templates
+  // 3. Populate initial proposal template only (Just-In-Time progressive lifecycle)
   await writeFileSafe(path.join(changeDir, "proposal.md"), getProposalTemplate(changeName));
-  await writeFileSafe(path.join(changeDir, "specs.md"), getSpecsTemplate(changeName));
-  await writeFileSafe(path.join(changeDir, "design.md"), getDesignTemplate(changeName));
-  await writeFileSafe(path.join(changeDir, "tasks.md"), getTasksTemplate(changeName));
 
   const successMsg = `Change workspace created at openspec/changes/${changeName}`;
   if (!options.silent) {
     p.log.success(pc.green(`Created change workspace: ${pc.bold(changeName)}`));
-    p.log.step(pc.dim("Generated proposal.md, specs.md, design.md, tasks.md"));
+    p.log.step(pc.dim("Generated proposal.md (subsequent artifacts are created Just-In-Time per phase)"));
     p.outro(
       pc.cyan(
-        `Next: Open the chat with your AI and prompt: "Help me fill out the proposal and specs for change '${changeName}'".`
+        `Next: Open the chat with your AI and run "/sdd" or "/sdd-propose" to draft the proposal.`
       )
     );
   }
