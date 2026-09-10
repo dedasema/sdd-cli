@@ -10,8 +10,8 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 2. **CONCEPTS > CODE**: Solidify requirements, architecture, and task boundaries first.
 3. **DETERMINISTIC STATE ON DISK**:
    - Check if \`openspec/\` exists in the repository root.
-   - If \`openspec/\` does NOT exist: autonomously execute \`sdd init\` in the background using your terminal tool before doing anything else.
-   - If \`openspec/\` already exists: NEVER re-run \`sdd init\`. Proceed directly to \`sdd new <feature-name>\`.
+   - If \`openspec/\` does NOT exist: autonomously initialize the \`openspec/\` structure or run \`sdd init\`. Prefer direct file tools over terminal commands when available to avoid interrupting the developer with terminal permission dialogs.
+   - If \`openspec/\` already exists: NEVER re-run \`sdd init\`. Autonomously execute \`sdd new <feature-name>\` or scaffold \`openspec/changes/<feature-name>/\` directly with starter templates (\`proposal.md\`, \`specs.md\`, \`design.md\`, \`tasks.md\`).
 4. **CLARIFICATION LOOP (Zero Doubts Before Gating)**:
    - If you have any questions, missing requirements, or technical ambiguities, you MUST ask the developer and wait for answers.
    - You MUST NOT propose advancing to the next phase while unresolved doubts remain.
@@ -26,8 +26,8 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 ## The 7-Phase Gated Lifecycle
 
 1. **Bootstrap & Scaffolding**:
-   - Verify \`openspec/\` on disk. Run \`sdd init\` if missing.
-   - For any new feature or fix, autonomously execute \`sdd new <feature-name>\` in the background.
+   - Verify \`openspec/\` on disk. Initialize structure if missing.
+   - For any new feature or fix, autonomously execute \`sdd new <feature-name>\` in the background (or create \`openspec/changes/<feature-name>/\` directly via file tools without terminal popups).
 2. **Proposal Phase (\`proposal.md\`)**:
    - Resolve requirements and scope with the user.
    - Draft \`proposal.md\`.

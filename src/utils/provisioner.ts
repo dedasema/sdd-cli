@@ -28,12 +28,12 @@ You are an expert software architect practicing Spec-Driven Development (SDD).
 
 1. **Bootstrap & Inspection**:
    - Check if \`openspec/\` exists in the root of the workspace.
-   - If \`openspec/\` does NOT exist, autonomously execute \`sdd init\` in the background using your terminal tool before writing any project code.
+   - If \`openspec/\` does NOT exist, autonomously initialize the \`openspec/\` structure (or run \`sdd init\`). Prefer direct file creation tools over terminal commands when available to avoid interrupting the developer with terminal permission dialogs.
 
 2. **Feature & Change Initialization**:
-   - When the user asks for a new feature, bug fix, or refactor, autonomously run:
+   - When the user asks for a new feature, bug fix, or refactor, autonomously scaffold the change directory under \`openspec/changes/<feature-hyphenated-name>/\` (with \`proposal.md\`, \`specs.md\`, \`design.md\`, \`tasks.md\`) or run:
      \`sdd new <feature-hyphenated-name>\`
-   - This scaffolds the change directory under \`openspec/changes/<feature-hyphenated-name>/\`.
+   - Prefer direct file creation tools to avoid terminal permission prompts.
 
 3. **Phase Progression (Spec-First)**:
    - **Proposal**: Fill \`proposal.md\` with intent, scope, capabilities, and risks. GATE: Present summary, ask: *"Propuesta lista. ¿Aprobás avanzar a Specifications?"* and STOP.
@@ -59,8 +59,8 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 2. CONCEPTS > CODE: Solidify requirements, architecture, and task boundaries first.
 3. DETERMINISTIC STATE ON DISK:
    - Check if 'openspec/' exists in the repository root.
-   - If 'openspec/' does NOT exist: autonomously run 'sdd init' in the background using your terminal tool before doing anything else.
-   - If 'openspec/' already exists: NEVER re-run 'sdd init'. Proceed directly to 'sdd new <feature-name>'.
+   - If 'openspec/' does NOT exist: autonomously initialize 'openspec/' (or run 'sdd init'). Prefer direct file creation tools over terminal commands when available to avoid interrupting the developer with terminal permission dialogs.
+   - If 'openspec/' already exists: NEVER re-run 'sdd init'. Scaffold 'openspec/changes/<feature-name>/' directly with starter templates (or run 'sdd new <feature-name>').
 4. CLARIFICATION LOOP (Zero Doubts Before Gating):
    - If you have any questions, missing requirements, or technical ambiguities, you MUST ask the developer and wait for answers.
    - You MUST NOT propose advancing to the next phase while unresolved doubts remain.
@@ -74,7 +74,7 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 
 ## The 7-Phase Gated Lifecycle
 
-1. Bootstrap & Scaffolding: Check 'openspec/' on disk. Run 'sdd init' if missing. For new features/fixes, run 'sdd new <feature-name>'.
+1. Bootstrap & Scaffolding: Check 'openspec/' on disk. Initialize structure if missing (or run 'sdd init'). For new features/fixes, scaffold 'openspec/changes/<feature-name>/' directly or run 'sdd new <feature-name>'. Avoid terminal dialogs when file tools are available.
 2. Proposal Phase ('proposal.md'): Draft scope and intent. GATE: Present summary and ask: "Propuesta lista. ¿Aprobás avanzar a Specifications?" -> STOP and wait.
 3. Specifications Phase ('specs.md'): Write RFC 2119 Given/When/Then scenarios. GATE: Present scenarios and ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP and wait.
 4. Design Phase ('design.md'): Formulate architecture decisions and tradeoffs. GATE: Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP and wait.
@@ -100,11 +100,11 @@ This workspace strictly adheres to Spec-Driven Development (SDD).
 1. LANGUAGE CONTRACT: Always communicate with the user in Spanish. Maintain technical terms in English (tests, specs, design, tasks, bug, refactor, commit, PR).
 2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch Proposal, Specs, Design, and Tasks together. Stop immediately at each gate and wait for user response.
 3. NO VIBE-CODING: Never write code without approved specifications and tasks.
-4. DETERMINISTIC STATE ON DISK: Check if 'openspec/' exists. If not, run 'sdd init'. If it exists, NEVER re-run 'sdd init'.
+4. DETERMINISTIC STATE ON DISK: Check if 'openspec/' exists. If not, initialize it directly using file tools or run 'sdd init'. Prefer file tools to avoid terminal confirmation prompts.
 5. CLARIFICATION LOOP: Ask all clarifying questions until zero doubts remain before proposing phase progression.
 
 ## 7-Phase Lifecycle:
-1. Bootstrap & Scaffolding ('sdd init' / 'sdd new <feature>')
+1. Bootstrap & Scaffolding (Initialize 'openspec/' / scaffold 'openspec/changes/<feature>/')
 2. Proposal ('proposal.md' -> GATE: "Propuesta lista. ¿Aprobás avanzar a Specifications?" -> STOP)
 3. Specifications ('specs.md' -> GATE: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP)
 4. Design ('design.md' -> GATE: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP)
@@ -119,11 +119,11 @@ This workspace strictly adheres to Spec-Driven Development (SDD).
 
 export const CLAUDE_COMMANDS: Record<string, string> = {
   "sdd.md":
-    'Execute the Spec-Driven Development (SDD) smart orchestrator in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch multiple phases together.\n3. Check if \'openspec/\' exists on disk. If not, run \'sdd init\'.\n4. If no active change, ask user for feature name and run \'sdd new $ARGUMENTS\'.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
+    'Execute the Spec-Driven Development (SDD) smart orchestrator in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch multiple phases together.\n3. Check if \'openspec/\' exists on disk. If not, initialize it directly using file tools or run \'sdd init\'.\n4. If no active change, ask user for feature name and scaffold \'openspec/changes/<feature-name>/\' directly with starter templates (or run \'sdd new $ARGUMENTS\'). Prefer file tools to avoid terminal permission dialogs.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
   "sdd-init.md":
-    'Check if \'openspec/\' exists in workspace. If not, run \'sdd init\' via the terminal tool to bootstrap the environment. Always communicate with user in Spanish.',
+    'Check if \'openspec/\' exists in workspace. If not, initialize \'openspec/\' structure directly using file tools (or run \'sdd init\'). Avoid terminal permission prompts when file tools are available. Always communicate with user in Spanish.',
   "sdd-new.md":
-    'Prompt user in Spanish for feature name (kebab-case) if not provided in arguments ($ARGUMENTS) and execute \'sdd new <feature-name>\' via the terminal tool.',
+    'Prompt user in Spanish for feature name (kebab-case) if not provided in arguments ($ARGUMENTS) and scaffold \'openspec/changes/<feature-name>/\' with starter templates directly using file tools (or run \'sdd new <feature-name>\'). Avoid terminal prompts.',
   "sdd-propose.md":
     'Help draft or refine proposal.md for the active change. Communicate in Spanish (keep technical terms in English). Address intent, scope, and capabilities. Resolve doubts with user. Present summary and ask: "Propuesta lista. ¿Aprobás avanzar a Specifications?" and STOP. Do NOT advance to specifications.',
   "sdd-spec.md":
@@ -190,15 +190,15 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
   const commands = {
     sdd: {
       description: "Execute Spec-Driven Development (SDD) smart orchestrator with interactive phase gates",
-      text: 'Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch multiple phases together.\n3. Check if "openspec/" exists on disk. If not, run "sdd init".\n4. If no active change exists, ask for feature name and run "sdd new <feature-name>".\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
+      text: 'Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms like tests, specs, design, tasks in English).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER batch multiple phases together.\n3. Check if "openspec/" exists on disk. If not, initialize it directly using file tools or run "sdd init".\n4. If no active change exists, ask user for feature name and scaffold "openspec/changes/<feature-name>/" directly with starter templates (or run "sdd new"). Prefer file creation tools over terminal commands to avoid interrupting the developer with terminal permission dialogs.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. Present summary, ask the phase gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user approval.',
     },
     "sdd-init": {
       description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
-      text: 'Check if "openspec/" exists. If not, execute "sdd init" via the terminal tool to bootstrap directory hierarchy, config, and AGENTS.md guidelines. Always communicate with user in Spanish.',
+      text: 'Initialize SDD / OpenSpec structure in current workspace. Create openspec/specs/, openspec/changes/archive/, openspec/config.yaml, and AGENTS.md directly using file tools (or run "sdd init"). Prefer file creation tools to avoid terminal permission dialogs. Always communicate with user in Spanish.',
     },
     "sdd-new": {
       description: "Scaffold a new SDD change workspace",
-      text: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and execute "sdd new <feature-name>" via the terminal tool to scaffold the change workspace.',
+      text: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and scaffold "openspec/changes/<feature-name>/" with proposal.md, specs.md, design.md, and tasks.md directly using file tools (or run "sdd new <feature-name>"). Prefer file creation tools to avoid terminal permission dialogs.',
     },
     "sdd-propose": {
       description: "Draft or refine the SDD change proposal (proposal.md)",
@@ -247,15 +247,15 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
 export const GRANULAR_SKILLS: Record<string, { description: string; instructions: string }> = {
   sdd: {
     description: "Spec-Driven Development (SDD) smart orchestrator with interactive phase gates",
-    instructions: `Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms in English like tests, specs, design, tasks, bug, refactor, commit, etc.).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER generate multiple phases together.\n3. Check if "openspec/" exists on disk. If not, run "sdd init".\n4. If no active change exists, ask user for feature name and run "sdd new <feature-name>".\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. At the end of the phase, present the summary, ask the gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user response.`,
+    instructions: `Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Always communicate in Spanish (keep technical terms in English like tests, specs, design, tasks, bug, refactor, commit, etc.).\n2. STRICT STEP-BY-STEP: Execute strictly ONE phase per turn. NEVER generate multiple phases together.\n3. Check if "openspec/" exists on disk. If not, initialize it directly using file tools or run "sdd init".\n4. If no active change exists, ask user for feature name and scaffold "openspec/changes/<feature-name>/" directly with starter templates (or run "sdd new"). Prefer file creation tools over terminal commands to avoid interrupting the developer with terminal permission dialogs.\n5. If active change exists, identify current phase and complete ONLY that phase.\n6. At the end of the phase, present the summary, ask the gate approval question in Spanish, and STOP IMMEDIATELY. Wait for user response.`,
   },
   "sdd-init": {
     description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
-    instructions: 'Check if "openspec/" exists. If not, execute "sdd init" via the terminal tool to bootstrap directory hierarchy, config, and AGENTS.md guidelines. Always communicate with user in Spanish.',
+    instructions: 'Initialize SDD / OpenSpec structure in current workspace. Create openspec/specs/, openspec/changes/archive/, openspec/config.yaml, and AGENTS.md directly using file tools (or run "sdd init"). Prefer file creation tools to avoid terminal permission dialogs. Always communicate with user in Spanish.',
   },
   "sdd-new": {
     description: "Scaffold a new SDD change workspace",
-    instructions: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and execute "sdd new <feature-name>" via the terminal tool to scaffold the change workspace.',
+    instructions: 'Prompt the user in Spanish for the feature or fix name (kebab-case) and scaffold "openspec/changes/<feature-name>/" with proposal.md, specs.md, design.md, and tasks.md directly using file tools (or run "sdd new <feature-name>"). Prefer file creation tools to avoid terminal permission dialogs.',
   },
   "sdd-propose": {
     description: "Draft or refine the SDD change proposal (proposal.md)",
