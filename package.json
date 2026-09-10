@@ -1,6 +1,6 @@
 {
   "name": "@dedasema/sdd-cli",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Agnostic CLI to scaffold and enforce Spec-Driven Development (SDD) with AI agents",
   "type": "module",
   "bin": {
