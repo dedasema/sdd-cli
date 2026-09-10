@@ -43,7 +43,19 @@ The provisioned assistant rules MUST strictly mandate:
 When injecting global rules into shared user files (`CLAUDE.md`, `copilot-instructions.md`, `AGENTS.md`, `settings.json`), the scripts MUST protect pre-existing configurations. Markdown files use comment markers (`<!-- >>> SDD PROTOCOL >>> -->` ... `<!-- <<< SDD PROTOCOL <<< -->`) and JSON configuration files surgically update only the SDD keys.
 
 ### Requirement: Interactive Environment Selection
-The installer and uninstaller scripts MUST prompt the user with an interactive menu to choose which of the environments to configure or remove (supporting comma/space-separated numbers `1-8`), defaulting to configuring all environments if the user enters `A` or presses Enter without input.
+The installation workflow MUST prompt the user with an interactive terminal UI to choose which AI environments to configure. The system MUST inspect the local machine and identify which environments are installed. Installed environments MUST be selectable and toggleable via standard multiselect controls (arrow keys to navigate, spacebar to toggle). Environments that are not detected on the machine MUST remain visible in the list but MUST be disabled and non-selectable, tagged with an unselectable status indicator `(not installed)`, preventing the user from toggling them.
+
+#### Scenario: Interactive Selection with Detected Environments
+- GIVEN the installer is executed on a machine where Zed is detected, but other editors are absent
+- WHEN the interactive environment selector is displayed
+- THEN Zed SHALL be rendered with an active toggleable checkbox
+- AND undetected editors SHALL be rendered as disabled with `(not installed)`
+- AND pressing Space on an undetected option SHALL NOT toggle its state
+
+#### Scenario: Scripted Non-Interactive Execution
+- GIVEN the installer is executed with a non-interactive flag (e.g., `--all` or `--silent`)
+- WHEN the installation executes
+- THEN it MUST bypass interactive prompts and provision detected environments automatically
 
 ### Requirement: Zero Terminal Intervention Post-Installation
 The provisioned skills and rules MUST instruct each AI assistant to autonomously detect `openspec/`, run `sdd init` in the background when missing, and run `sdd new <feature>` for each new change without requiring manual developer terminal commands.

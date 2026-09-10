@@ -5,6 +5,7 @@ import { Command } from "commander";
 import { initCommand } from "./commands/init.js";
 import { newCommand } from "./commands/new.js";
 import { statusCommand } from "./commands/status.js";
+import { setupCommand } from "./commands/setup.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 let pkgVersion = "0.1.3";
@@ -47,6 +48,15 @@ program
   .option("--cwd <path>", "Target working directory")
   .action(async (options) => {
     await statusCommand({ cwd: options.cwd });
+  });
+
+program
+  .command("setup")
+  .description("Configure global SDD skills and rules across detected AI environments")
+  .option("-a, --all", "Provision all detected environments without interactive prompts")
+  .option("-s, --silent", "Run silently without banners")
+  .action(async (options) => {
+    await setupCommand({ all: options.all, silent: options.silent });
   });
 
 program.parse(process.argv);
