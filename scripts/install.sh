@@ -18,12 +18,12 @@ fi
 # 2. Detect package manager and install
 echo -e "\n\033[32m--> Installing @dedasema/sdd-cli globally...\033[0m"
 
-if command -v pnpm >/dev/null 2>&1; then
-    pnpm add -g @dedasema/sdd-cli
-elif command -v npm >/dev/null 2>&1; then
+if command -v npm >/dev/null 2>&1; then
     npm install -g @dedasema/sdd-cli
+elif command -v pnpm >/dev/null 2>&1; then
+    pnpm add -g @dedasema/sdd-cli
 else
-    echo -e "\033[31m[ERROR] Neither pnpm nor npm was found.\033[0m"
+    echo -e "\033[31m[ERROR] Neither npm nor pnpm was found.\033[0m"
     exit 1
 fi
 

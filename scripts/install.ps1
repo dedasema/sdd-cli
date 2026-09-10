@@ -16,17 +16,17 @@ if (-not $nodeCmd) {
 }
 
 # 2. Detect package manager and install CLI
-$pnpmCmd = Get-Command pnpm -ErrorAction SilentlyContinue
 $npmCmd = Get-Command npm -ErrorAction SilentlyContinue
+$pnpmCmd = Get-Command pnpm -ErrorAction SilentlyContinue
 
 Write-Host "`n--> Installing @dedasema/sdd-cli globally..." -ForegroundColor Green
 
-if ($pnpmCmd) {
-    pnpm add -g @dedasema/sdd-cli
-} elseif ($npmCmd) {
+if ($npmCmd) {
     npm install -g @dedasema/sdd-cli
+} elseif ($pnpmCmd) {
+    pnpm add -g @dedasema/sdd-cli
 } else {
-    Write-Host "[ERROR] Neither pnpm nor npm was found." -ForegroundColor Red
+    Write-Host "[ERROR] Neither npm nor pnpm was found." -ForegroundColor Red
     exit 1
 }
 
