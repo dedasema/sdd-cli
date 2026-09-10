@@ -106,6 +106,22 @@ Scans `openspec/changes/` and parses `tasks.md` files to display a visual comple
 
 ---
 
+## Uninstallation
+
+To completely remove the SDD CLI and purge all globally provisioned skills, rules, and commands across all 7 AI environments:
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/uninstall.ps1 | iex
+```
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/uninstall.sh | bash
+```
+
+---
+
 ## Development
 
 ```bash

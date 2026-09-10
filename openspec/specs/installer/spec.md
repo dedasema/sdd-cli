@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Defines formal requirements for installing the SDD CLI and automatically provisioning global SDD skills and rules across supported AI environments.
+Defines formal requirements for installing, provisioning, and cleanly uninstalling the SDD CLI and associated global skills and rules across supported AI environments.
 
 ## Requirements
 
@@ -21,3 +21,6 @@ The installer scripts MUST provision universal `SKILL.md` configurations exclusi
 
 ### Requirement: Zero Terminal Intervention Post-Installation
 The provisioned skills and rules MUST instruct each AI assistant to autonomously detect `openspec/`, run `sdd init` in the background when missing, and run `sdd new <feature>` for each new change without requiring manual developer terminal commands.
+
+### Requirement: Single-Line Clean Uninstallation
+The project MUST provide single-line uninstallation scripts for Windows (`uninstall.ps1`) and Unix/macOS (`uninstall.sh`) that cleanly purge all 7 global `sdd/` skill directories and standalone rules/commands without affecting other user configurations, and remove `@dedasema/sdd-cli` globally.
