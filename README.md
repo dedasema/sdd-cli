@@ -11,18 +11,25 @@
 
 ## Why SDD?
 
-When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Windsurf) without structure, models often jump straight to generating code without architecture, tests, or contract verification.
+When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, OpenCode, Zed) without structure, models often jump straight to generating code without architecture, tests, or contract verification.
 
-**SDD CLI** solves this by scaffolding a deterministic specification workflow and injecting strict guidelines into `AGENTS.md` at the repository root. Any AI reading the repository is guided through an interactive, human-in-the-loop lifecycle:
+**SDD CLI** solves this by scaffolding a deterministic specification workflow and injecting strict guidelines into `AGENTS.md` at the repository root. Any AI reading the repository is guided through an interactive, human-in-the-loop lifecycle with mandatory checkpoints:
 
 1. **Bootstrap & Inspection**: Deterministically checks if `openspec/` exists on disk. Automatically runs `sdd init` only once if missing.
-2. **Clarification Loop**: If the AI has open questions, it must ask the developer and resolve all doubts before proposing phase progression.
-3. **Proposal** (`proposal.md`): Intent, scope, and capabilities. *(Gate: requires user approval before specs)*.
-4. **Specifications** (`specs.md`): Formal requirements using RFC 2119 keywords and Given/When/Then scenarios. *(Gate: requires user approval before design)*.
-5. **Design** (`design.md`): Technical approach, architectural tradeoffs, and data flow. *(Gate: requires user approval before tasks)*.
-6. **Tasks** (`tasks.md`): Atomic, verifiable implementation checklist. *(Gate: requires user approval before coding)*.
-7. **Apply & Verify**: Implementation checked against `tasks.md`, followed by test execution, linting, and spec compliance audits.
-8. **Gated Archive**: Change is archived only after verification passes and the developer explicitly approves.
+2. **Clarification Loop**: If the AI has open questions, it must ask the developer and resolve all ambiguities before proposing phase progression.
+3. **Proposal** (`proposal.md`): Intent, scope (in/out), and risks. *(Gate: requires explicit user approval before specs)*.
+4. **Specifications** (`specs.md`): Formal requirements using RFC 2119 keywords and Given/When/Then test scenarios. *(Gate: requires explicit user approval before design)*.
+5. **Design** (`design.md`): Technical approach, architectural tradeoffs, and target files. *(Gate: requires explicit user approval before tasks)*.
+6. **Tasks** (`tasks.md`): Atomic, verifiable implementation checklist. *(Gate: requires explicit user approval before coding)*.
+7. **Apply** (`sdd-apply`): Step-by-step implementation per `tasks.md`, marking `- [x]` as completed. *(Gate: requires explicit user approval before verification)*.
+8. **Verify** (`sdd-verify`): Automated test execution, static analysis, and spec compliance audits. Remediates failures until green.
+9. **Gated Archive** (`sdd-archive`): Change is archived to `openspec/changes/archive/` and living specs in `openspec/specs/` are updated only after explicit developer approval.
+
+### 🌐 Language Contract
+All generated AI assistants and skills enforce a strict language contract:
+- **Developer Communication**: Spanish by default, ensuring natural collaboration with warm tone.
+- **Technical Integrity**: Standard industry software engineering terms remain in English (`specs`, `tests`, `design`, `tasks`, `bug`, `refactor`, `commit`, `PR`, etc.).
+- **Code & Artifacts**: Technical code and documentation artifacts are written in clean English.
 
 ---
 
@@ -37,9 +44,9 @@ Installs the CLI globally **AND** interactively prompts you to choose which AI e
 - **[3] OpenAI Codex** (`~/.codex/AGENTS.md` + skills)
 - **[4] GitHub Copilot (VS Code)** (`~/.copilot/copilot-instructions.md` + skills)
 - **[5] OpenCode** (`~/.config/opencode/AGENTS.md` + skills)
-- **[6] Claude Code** (`~/.claude/CLAUDE.md` + 9 native `/sdd*` commands)
+- **[6] Claude Code** (`~/.claude/CLAUDE.md` + 10 native `/sdd*` commands)
 - **[7] Cursor** (`~/.cursor/rules/sdd.mdc` + skills)
-- **[8] Zed** (`AGENTS.md` + 9 slash commands under `assistant.slash_commands.*` + skill)
+- **[8] Zed** (`AGENTS.md` + 10 slash commands under `~/.agents/skills/` and settings)
 - **[A] All environments** (Default — just press Enter)
 
 **Windows (PowerShell):**
@@ -54,16 +61,17 @@ curl -fsSL https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/insta
 
 Once installed, open any project in your preferred editor/agent and type in chat:
 - `"Quiero empezar este proyecto con SDD"`
-- Or use any of the 9 slash commands:
-  - `/sdd`: Smart end-to-end orchestrator with interactive gates
-  - `/sdd-init`: Initialize OpenSpec structure
+- Or use any of the 10 slash commands:
+  - `/sdd`: Smart orchestrator (audits repo state, inits if missing, creates change, or resumes active phase; strictly ONE phase per turn)
+  - `/sdd-init`: Initialize OpenSpec structure and AGENTS.md
   - `/sdd-new <feature>`: Scaffold a new change workspace
-  - `/sdd-propose`: Draft or refine proposal
-  - `/sdd-spec`: Draft Given/When/Then scenarios
-  - `/sdd-design`: Draft technical architecture decisions
-  - `/sdd-tasks`: Break down implementation checklist
-  - `/sdd-verify`: Run test suite and spec verification
-  - `/sdd-archive`: Formally verify and archive change
+  - `/sdd-propose`: Draft or refine proposal (`proposal.md`)
+  - `/sdd-spec`: Draft Given/When/Then scenarios (`specs.md`)
+  - `/sdd-design`: Draft technical architecture decisions (`design.md`)
+  - `/sdd-tasks`: Break down implementation checklist (`tasks.md`)
+  - `/sdd-apply`: Implement code per tasks checklist and check off `- [x]`
+  - `/sdd-verify`: Run test suites and audit compliance against specs
+  - `/sdd-archive`: Formally verify and archive change into `openspec/changes/archive/`
 
 Your AI will handle initialization and scaffolding autonomously in the background. Zero terminal required!
 
