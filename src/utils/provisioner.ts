@@ -165,6 +165,7 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
     }
   }
 
+  if (!settings.slash_commands) settings.slash_commands = {};
   if (!settings.assistant) settings.assistant = {};
   if (!settings.assistant.slash_commands) settings.assistant.slash_commands = {};
 
@@ -208,7 +209,13 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
   };
 
   for (const [name, def] of Object.entries(commands)) {
-    settings.assistant.slash_commands[name] = def;
+    const entry = {
+      description: def.description,
+      prompt: def.text,
+      text: def.text,
+    };
+    settings.slash_commands[name] = entry;
+    settings.assistant.slash_commands[name] = entry;
   }
 
   const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
