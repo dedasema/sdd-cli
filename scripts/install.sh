@@ -32,13 +32,13 @@ HOME_DIR="${HOME:-$USERPROFILE}"
 
 # 4. Interactive Agent / IDE Selection Menu
 echo -e "\n\033[36mSelect AI environments to configure:\033[0m"
-echo "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd)"
-echo "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd)"
-echo "  [3] OpenAI Codex            (~/.codex/skills/sdd)"
-echo "  [4] GitHub Copilot (VS Code)(~/.copilot/skills/sdd)"
-echo "  [5] OpenCode                (~/.config/opencode/skills/sdd)"
-echo "  [6] Claude Code             (~/.claude/skills/sdd + /sdd command)"
-echo "  [7] Cursor                  (~/.cursor/skills/sdd + .mdc rule)"
+echo "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd + /sdd)"
+echo "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd + /sdd)"
+echo "  [3] OpenAI Codex            (~/.codex/AGENTS.md + skills)"
+echo "  [4] GitHub Copilot (VS Code)(~/.copilot/copilot-instructions.md + skills)"
+echo "  [5] OpenCode                (~/.config/opencode/AGENTS.md + skills)"
+echo "  [6] Claude Code             (~/.claude/CLAUDE.md + /sdd command)"
+echo "  [7] Cursor                  (~/.cursor/rules/sdd.mdc + skills)"
 echo "  [A] All environments       (Default - press Enter)"
 
 RAW_CHOICE=""
@@ -66,7 +66,7 @@ else
     fi
 fi
 
-# 5. Universal Agent Skill Definition
+# 5. Shared Protocol Definitions
 SKILL_CONTENT='---
 name: sdd
 description: "Spec-Driven Development (SDD) autonomous lifecycle. Triggers on project creation, feature development, bug fixes, or when SDD is mentioned."
@@ -98,7 +98,45 @@ You are an expert software architect practicing Spec-Driven Development (SDD).
    - Write code according to `tasks.md`.
    - Run verification and tests (`sdd status` to check progress).'
 
-echo -e "\n\033[32m--> Provisioning selected SDD skills...\033[0m"
+RULE_BLOCK='# Spec-Driven Development (SDD) Autonomous Protocol
+
+When the user asks to create a project, develop a feature, or use Spec-Driven Development:
+1. Check if '\''openspec/'\'' exists in the root of the current workspace.
+2. If '\''openspec/'\'' does NOT exist, autonomously execute '\''sdd init'\'' in the background using your terminal tool before writing code.
+3. For any new feature or bug fix, autonomously execute '\''sdd new <feature-name>'\'' in the background to create the change workspace.
+4. Fill in the proposal, specs (Given/When/Then), design, and tasks before implementing code.
+5. Never vibe-code: wait for user approval on specifications before touching code.'
+
+inject_delimited_rule() {
+    local file="$1"
+    local content="$2"
+    local dir
+    dir="$(dirname "$file")"
+    mkdir -p "$dir"
+    node -e '
+    const fs = require("fs");
+    const filePath = process.argv[1];
+    const content = process.argv[2];
+    const startMarker = "<!-- >>> SDD PROTOCOL >>> -->";
+    const endMarker = "<!-- <<< SDD PROTOCOL <<< -->";
+    const block = startMarker + "\n" + content.trim() + "\n" + endMarker;
+    let result = "";
+    if (fs.existsSync(filePath)) {
+        let existing = fs.readFileSync(filePath, "utf8");
+        const regex = new RegExp(startMarker + "[\\s\\S]*?" + endMarker);
+        if (regex.test(existing)) {
+            result = existing.replace(regex, block);
+        } else {
+            result = existing.trimEnd() + "\n\n" + block + "\n";
+        }
+    } else {
+        result = block + "\n";
+    }
+    fs.writeFileSync(filePath, result, "utf8");
+    ' "$file" "$content"
+}
+
+echo -e "\n\033[32m--> Provisioning selected SDD skills & global rules...\033[0m"
 
 for item in $SELECTED; do
     case "$item" in
@@ -106,39 +144,58 @@ for item in $SELECTED; do
             target="$HOME_DIR/.gemini/config/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] Antigravity 2.0   -> $target/SKILL.md\033[0m"
+            echo -e "\033[36m    [OK] Antigravity 2.0 (Skill + /sdd) -> $target/SKILL.md\033[0m"
             ;;
         2)
             target="$HOME_DIR/.gemini/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] Antigravity CLI  -> $target/SKILL.md\033[0m"
+            echo -e "\033[36m    [OK] Antigravity CLI (Skill + /sdd) -> $target/SKILL.md\033[0m"
             ;;
         3)
+            # Skill
             target="$HOME_DIR/.codex/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] OpenAI Codex     -> $target/SKILL.md\033[0m"
+            echo -e "\033[36m    [OK] OpenAI Codex (Skill)          -> $target/SKILL.md\033[0m"
+            # Global Rule: ~/.codex/AGENTS.md
+            codex_rule="$HOME_DIR/.codex/AGENTS.md"
+            inject_delimited_rule "$codex_rule" "$RULE_BLOCK"
+            echo -e "\033[36m    [OK] OpenAI Codex (Global Rule)    -> $codex_rule\033[0m"
             ;;
         4)
+            # Skill
             target="$HOME_DIR/.copilot/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] GitHub Copilot   -> $target/SKILL.md\033[0m"
+            echo -e "\033[36m    [OK] GitHub Copilot (Skill)        -> $target/SKILL.md\033[0m"
+            # Global Rule: ~/.copilot/copilot-instructions.md
+            copilot_rule="$HOME_DIR/.copilot/copilot-instructions.md"
+            inject_delimited_rule "$copilot_rule" "$RULE_BLOCK"
+            echo -e "\033[36m    [OK] GitHub Copilot (Global Rule)  -> $copilot_rule\033[0m"
             ;;
         5)
+            # Skill
             target="$HOME_DIR/.config/opencode/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] OpenCode         -> $target/SKILL.md\033[0m"
+            echo -e "\033[36m    [OK] OpenCode (Skill)              -> $target/SKILL.md\033[0m"
+            # Global Rule: ~/.config/opencode/AGENTS.md
+            opencode_rule="$HOME_DIR/.config/opencode/AGENTS.md"
+            inject_delimited_rule "$opencode_rule" "$RULE_BLOCK"
+            echo -e "\033[36m    [OK] OpenCode (Global Rule)        -> $opencode_rule\033[0m"
             ;;
         6)
+            # Skill
             target="$HOME_DIR/.claude/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] Claude Code      -> $target/SKILL.md\033[0m"
-
-            # Ingest Specialized Claude Code Command
+            echo -e "\033[36m    [OK] Claude Code (Skill)           -> $target/SKILL.md\033[0m"
+            # Global Rule: ~/.claude/CLAUDE.md
+            claude_rule="$HOME_DIR/.claude/CLAUDE.md"
+            inject_delimited_rule "$claude_rule" "$RULE_BLOCK"
+            echo -e "\033[36m    [OK] Claude Code (Global Rule)     -> $claude_rule\033[0m"
+            # Slash Command: ~/.claude/commands/sdd.md
             CLAUDE_DIR="$HOME_DIR/.claude/commands"
             mkdir -p "$CLAUDE_DIR"
             cat << 'EOF' > "$CLAUDE_DIR/sdd.md"
@@ -147,15 +204,15 @@ If 'openspec/' does not exist, run 'sdd init' via the terminal tool to bootstrap
 If a change name is given as an argument, run 'sdd new "$@"' in the background.
 Always follow the proposal, specs, design, and tasks phases before writing code.
 EOF
-            echo -e "\033[36m    [OK] Claude Command   -> $CLAUDE_DIR/sdd.md\033[0m"
+            echo -e "\033[36m    [OK] Claude Code (Slash Command)   -> $CLAUDE_DIR/sdd.md\033[0m"
             ;;
         7)
+            # Skill
             target="$HOME_DIR/.cursor/skills/sdd"
             mkdir -p "$target"
             echo "$SKILL_CONTENT" > "$target/SKILL.md"
-            echo -e "\033[36m    [OK] Cursor           -> $target/SKILL.md\033[0m"
-
-            # Ingest Specialized Cursor Rule
+            echo -e "\033[36m    [OK] Cursor (Skill)                -> $target/SKILL.md\033[0m"
+            # Global Rule: ~/.cursor/rules/sdd.mdc
             CURSOR_DIR="$HOME_DIR/.cursor/rules"
             mkdir -p "$CURSOR_DIR"
             cat << 'EOF' > "$CURSOR_DIR/sdd.mdc"
@@ -174,7 +231,7 @@ When the user asks to create a project, develop a feature, or use Spec-Driven De
 4. Fill in the proposal, specs (Given/When/Then), design, and tasks before implementing code.
 5. Never vibe-code: wait for user approval on specifications before touching code.
 EOF
-            echo -e "\033[36m    [OK] Cursor Rule      -> $CURSOR_DIR/sdd.mdc\033[0m"
+            echo -e "\033[36m    [OK] Cursor (Global Rule)          -> $CURSOR_DIR/sdd.mdc\033[0m"
             ;;
     esac
 done
@@ -183,8 +240,7 @@ done
 echo -e "\n\033[36m=========================================\033[0m"
 echo -e "\033[32m   Installation complete! You're ready!  \033[0m"
 echo -e "\033[36m=========================================\033[0m"
-echo -e "\nYour selected AI environment(s) are now trained to handle SDD."
-echo -e "Open any project in your chosen editor and type in chat:"
-echo -e "  \033[33m> 'Quiero iniciar un proyecto con SDD'\033[0m"
-echo -e "  \033[33m> or use the slash command: /sdd <feature-name>\033[0m"
+echo -e "\nGlobal rules & skills are now active across your chosen environment(s)."
+echo -e "Open ANY project in your editor and your AI will automatically follow SDD."
+echo -e "You can also use slash commands like /sdd where supported."
 echo -e "\n\033[32mZero terminal required from now on!\033[0m\n"

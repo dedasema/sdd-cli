@@ -11,13 +11,13 @@ HOME_DIR="${HOME:-$USERPROFILE}"
 
 # 2. Interactive Selection Menu
 echo -e "\n\033[36mSelect AI environments to clean up:\033[0m"
-echo "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd)"
-echo "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd)"
-echo "  [3] OpenAI Codex            (~/.codex/skills/sdd)"
-echo "  [4] GitHub Copilot (VS Code)(~/.copilot/skills/sdd)"
-echo "  [5] OpenCode                (~/.config/opencode/skills/sdd)"
-echo "  [6] Claude Code             (~/.claude/skills/sdd + /sdd command)"
-echo "  [7] Cursor                  (~/.cursor/skills/sdd + .mdc rule)"
+echo "  [1] Antigravity 2.0         (~/.gemini/config/skills/sdd + /sdd)"
+echo "  [2] Antigravity CLI (agy)   (~/.gemini/skills/sdd + /sdd)"
+echo "  [3] OpenAI Codex            (~/.codex/AGENTS.md + skills)"
+echo "  [4] GitHub Copilot (VS Code)(~/.copilot/copilot-instructions.md + skills)"
+echo "  [5] OpenCode                (~/.config/opencode/AGENTS.md + skills)"
+echo "  [6] Claude Code             (~/.claude/CLAUDE.md + commands)"
+echo "  [7] Cursor                  (~/.cursor/rules/sdd.mdc + skills)"
 echo "  [A] All environments       (Default - press Enter)"
 
 RAW_CHOICE=""
@@ -45,7 +45,33 @@ else
     fi
 fi
 
-echo -e "\n\033[33m--> Removing selected SDD skills...\033[0m"
+remove_delimited_rule() {
+    local file="$1"
+    if [ -f "$file" ]; then
+        node -e '
+        const fs = require("fs");
+        const filePath = process.argv[1];
+        if (fs.existsSync(filePath)) {
+            const startMarker = "<!-- >>> SDD PROTOCOL >>> -->";
+            const endMarker = "<!-- <<< SDD PROTOCOL <<< -->";
+            let existing = fs.readFileSync(filePath, "utf8");
+            const regex = new RegExp(startMarker + "[\\s\\S]*?" + endMarker);
+            if (regex.test(existing)) {
+                let cleaned = existing.replace(regex, "").trim();
+                if (!cleaned) {
+                    fs.unlinkSync(filePath);
+                    console.log("    \x1b[33m[REMOVED] " + filePath + "\x1b[0m");
+                } else {
+                    fs.writeFileSync(filePath, cleaned + "\n", "utf8");
+                    console.log("    \x1b[33m[EXCISED] SDD block from " + filePath + " (user instructions preserved)\x1b[0m");
+                }
+            }
+        }
+        ' "$file"
+    fi
+}
+
+echo -e "\n\033[33m--> Removing selected SDD skills & global rules...\033[0m"
 
 for item in $SELECTED; do
     case "$item" in
@@ -53,59 +79,63 @@ for item in $SELECTED; do
             target="$HOME_DIR/.gemini/config/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] Antigravity 2.0   -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
             ;;
         2)
             target="$HOME_DIR/.gemini/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] Antigravity CLI  -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
             ;;
         3)
             target="$HOME_DIR/.codex/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] OpenAI Codex     -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
+            remove_delimited_rule "$HOME_DIR/.codex/AGENTS.md"
             ;;
         4)
             target="$HOME_DIR/.copilot/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] GitHub Copilot   -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
+            remove_delimited_rule "$HOME_DIR/.copilot/copilot-instructions.md"
             ;;
         5)
             target="$HOME_DIR/.config/opencode/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] OpenCode         -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
+            remove_delimited_rule "$HOME_DIR/.config/opencode/AGENTS.md"
             ;;
         6)
             target="$HOME_DIR/.claude/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] Claude Code      -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
+            remove_delimited_rule "$HOME_DIR/.claude/CLAUDE.md"
             cmd_target="$HOME_DIR/.claude/commands/sdd.md"
             if [ -f "$cmd_target" ]; then
                 rm -f "$cmd_target"
-                echo -e "\033[33m    [REMOVED] Claude Command   -> $cmd_target\033[0m"
+                echo -e "\033[33m    [REMOVED] Claude Command -> $cmd_target\033[0m"
             fi
             ;;
         7)
             target="$HOME_DIR/.cursor/skills/sdd"
             if [ -d "$target" ]; then
                 rm -rf "$target"
-                echo -e "\033[33m    [REMOVED] Cursor           -> $target\033[0m"
+                echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
             rule_target="$HOME_DIR/.cursor/rules/sdd.mdc"
             if [ -f "$rule_target" ]; then
                 rm -f "$rule_target"
-                echo -e "\033[33m    [REMOVED] Cursor Rule      -> $rule_target\033[0m"
+                echo -e "\033[33m    [REMOVED] Cursor Rule    -> $rule_target\033[0m"
             fi
             ;;
     esac

@@ -27,13 +27,13 @@ When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Win
 
 Installs the CLI globally **AND** interactively prompts you to choose which AI environments to configure (or install all with `A`):
 
-- **[1] Antigravity 2.0** (`~/.gemini/config/skills/sdd/`)
-- **[2] Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/`)
-- **[3] OpenAI Codex** (`~/.codex/skills/sdd/`)
-- **[4] GitHub Copilot (VS Code)** (`~/.copilot/skills/sdd/`)
-- **[5] OpenCode** (`~/.config/opencode/skills/sdd/`)
-- **[6] Claude Code** (`~/.claude/skills/sdd/` + `/sdd` command)
-- **[7] Cursor** (`~/.cursor/skills/sdd/` + `.mdc` rule)
+- **[1] Antigravity 2.0** (`~/.gemini/config/skills/sdd/` + `/sdd`)
+- **[2] Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/` + `/sdd`)
+- **[3] OpenAI Codex** (`~/.codex/AGENTS.md` + skills)
+- **[4] GitHub Copilot (VS Code)** (`~/.copilot/copilot-instructions.md` + skills)
+- **[5] OpenCode** (`~/.config/opencode/AGENTS.md` + skills)
+- **[6] Claude Code** (`~/.claude/CLAUDE.md` + `/sdd` command)
+- **[7] Cursor** (`~/.cursor/rules/sdd.mdc` + skills)
 - **[A] All environments** (Default — just press Enter)
 
 **Windows (PowerShell):**
