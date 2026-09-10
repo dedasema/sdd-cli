@@ -43,6 +43,11 @@ describe("SDD CLI Setup Command", () => {
     expect(settingsContent).toContain("slash_commands");
     expect(settingsContent).toContain("sdd-archive");
 
+    // Universal Agent Skills for Zed Assistant
+    expect(await fileExists(path.join(tempHome, ".agents", "skills", "sdd", "SKILL.md"))).toBe(true);
+    expect(await fileExists(path.join(tempHome, ".agents", "skills", "sdd-tasks", "SKILL.md"))).toBe(true);
+    expect(await fileExists(path.join(tempHome, ".agents", "skills", "sdd-archive", "SKILL.md"))).toBe(true);
+
     // Verify Cursor skill and rule
     const cursorSkill = path.join(tempHome, ".cursor", "skills", "sdd", "SKILL.md");
     const cursorRule = path.join(tempHome, ".cursor", "rules", "sdd.mdc");

@@ -222,6 +222,45 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
   await fs.promises.writeFile(settingsPath, output, "utf8");
 }
 
+export const GRANULAR_SKILLS: Record<string, { description: string; instructions: string }> = {
+  sdd: {
+    description: "Spec-Driven Development (SDD) smart orchestrator with interactive phase gates",
+    instructions: `Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Check if "openspec/" exists on disk. If not, run "sdd init".\n2. If no active change exists, ask for feature name and run "sdd new <feature-name>".\n3. If active change exists, identify current phase and resume.\n4. Resolve all clarifying questions before proposing phase progression.\n5. Enforce explicit user approval gates at each phase (Proposal -> Specs -> Design -> Tasks -> Apply -> Verify -> Archive).`,
+  },
+  "sdd-init": {
+    description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
+    instructions: 'Check if "openspec/" exists. If not, execute "sdd init" via the terminal tool to bootstrap directory hierarchy, config, and AGENTS.md guidelines.',
+  },
+  "sdd-new": {
+    description: "Scaffold a new SDD change workspace",
+    instructions: 'Prompt the user for the feature or fix name (kebab-case) and execute "sdd new <feature-name>" via the terminal tool to scaffold the change workspace.',
+  },
+  "sdd-propose": {
+    description: "Draft or refine the SDD change proposal (proposal.md)",
+    instructions: "Help draft or refine proposal.md for the active change. Address intent, scope, and capabilities. Resolve any doubts with the user, then ask for explicit approval to advance to Specifications.",
+  },
+  "sdd-spec": {
+    description: "Draft or refine formal specifications (specs.md) with Given/When/Then scenarios",
+    instructions: "Help draft or refine specs.md for the active change. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. When complete, ask for explicit approval to advance to Technical Design.",
+  },
+  "sdd-design": {
+    description: "Draft technical design (design.md) with architecture decisions and tradeoffs",
+    instructions: "Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target files. When complete, ask for approval to advance to Tasks checklist.",
+  },
+  "sdd-tasks": {
+    description: "Break down implementation tasks checklist (tasks.md)",
+    instructions: "Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. When complete, ask for explicit approval to begin Implementation.",
+  },
+  "sdd-verify": {
+    description: "Verify implementation: execute tests, lint, and audit compliance against specs",
+    instructions: 'Verify the active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. When green, ask: "All tests pass and specs verified. Do you approve archiving this change?"',
+  },
+  "sdd-archive": {
+    description: "Verify and archive completed SDD change, syncing living specs",
+    instructions: 'Ensure verification is complete and tests pass. Confirm with the user: "Do you approve archiving this change?". Upon confirmation, move the change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and update living specs in openspec/specs/.',
+  },
+};
+
 export async function provisionEnvironment(
   id: EnvironmentId,
   homedir: string = os.homedir()
@@ -296,6 +335,14 @@ export async function provisionEnvironment(
       await writeFileSafe(skillPath, SKILL_CONTENT);
       await injectDelimitedRule(rulePath, SDD_RULE_BLOCK);
       await injectZedSettings(settingsPath);
+
+      // Universal Agent Skills for Zed Assistant
+      const agentSkillsDir = path.join(homedir, ".agents", "skills");
+      for (const [name, def] of Object.entries(GRANULAR_SKILLS)) {
+        const skillFile = path.join(agentSkillsDir, name, "SKILL.md");
+        const content = `---\nname: ${name}\ndescription: "${def.description}"\n---\n\n# ${def.description}\n\n${def.instructions}\n`;
+        await writeFileSafe(skillFile, content);
+      }
       break;
     }
   }
