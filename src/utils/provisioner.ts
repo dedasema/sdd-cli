@@ -43,9 +43,8 @@ You are an expert software architect practicing Spec-Driven Development (SDD).
    - NEVER start coding before specifications and tasks are defined and approved.
 
 4. **Implementation & Verification**:
-   - Write code according to \`tasks.md\`.
-   - Run verification and tests (\`sdd status\` to check progress).
-   - GATE: Present results, ask: *"Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?"* and STOP.
+   - **Apply**: Write code according to \`tasks.md\`, marking checkboxes \`- [x]\`. GATE: Ask: *"Checklist de tareas completado. ¿Aprobás pasar a Verification?"* and STOP.
+   - **Verify**: Run verification and tests (\`sdd status\` to check progress). GATE: Present results, ask: *"Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?"* and STOP.
 `;
 
 export const SDD_RULE_BLOCK = `<!-- >>> SDD PROTOCOL >>> -->
@@ -80,11 +79,11 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 3. Specifications Phase ('specs.md'): Write RFC 2119 Given/When/Then scenarios. GATE: Present scenarios and ask: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP and wait.
 4. Design Phase ('design.md'): Formulate architecture decisions and tradeoffs. GATE: Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP and wait.
 5. Tasks Phase ('tasks.md'): Break down atomic checklist. GATE: Present checklist and ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" -> STOP and wait.
-6. Apply Phase (Implementation): Implement code task by task, checking off '- [x]'.
+6. Apply Phase (Implementation): Implement code task by task, checking off '- [x]'. GATE: Present completed work and ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" -> STOP and wait.
 7. Verify Phase (Quality Assurance): Run tests, type checks, and audit compliance against specs. Fix any errors. GATE: Ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" -> STOP and wait.
 8. Archive Phase (Sync & Finalization): Move change to 'openspec/changes/archive/YYYY-MM-DD-<feature>/' and update living specs in 'openspec/specs/'.
 
-## Supported Commands & Triggers: /sdd, /sdd-init, /sdd-new, /sdd-propose, /sdd-spec, /sdd-design, /sdd-tasks, /sdd-verify, /sdd-archive.
+## Supported Commands & Triggers: /sdd, /sdd-init, /sdd-new, /sdd-propose, /sdd-spec, /sdd-design, /sdd-tasks, /sdd-apply, /sdd-verify, /sdd-archive.
 <!-- <<< SDD PROTOCOL <<< -->`;
 
 export const CURSOR_RULE_CONTENT = `---
@@ -110,12 +109,12 @@ This workspace strictly adheres to Spec-Driven Development (SDD).
 3. Specifications ('specs.md' -> GATE: "Specifications listas. ¿Aprobás avanzar a Technical Design?" -> STOP)
 4. Design ('design.md' -> GATE: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" -> STOP)
 5. Tasks ('tasks.md' -> GATE: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" -> STOP)
-6. Apply (Implement code per tasks checklist)
+6. Apply (Implement code per tasks checklist -> GATE: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" -> STOP)
 7. Verify (Run tests & audit specs -> GATE: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" -> STOP)
 8. Archive (Move change to archive/ and update living specs)
 
 ## Supported Triggers:
-/sdd, /sdd-init, /sdd-new, /sdd-propose, /sdd-spec, /sdd-design, /sdd-tasks, /sdd-verify, /sdd-archive.
+/sdd, /sdd-init, /sdd-new, /sdd-propose, /sdd-spec, /sdd-design, /sdd-tasks, /sdd-apply, /sdd-verify, /sdd-archive.
 `;
 
 export const CLAUDE_COMMANDS: Record<string, string> = {
@@ -133,6 +132,8 @@ export const CLAUDE_COMMANDS: Record<string, string> = {
     'Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target files. Communicate in Spanish (keep technical terms in English). Present design and ask: "Design listo. ¿Aprobás avanzar al checklist de Tasks?" and STOP. Do NOT advance to tasks checklist.',
   "sdd-tasks.md":
     'Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist and ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
+  "sdd-apply.md":
+    'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and marking checkboxes \'- [x]\' as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
   "sdd-verify.md":
     'Verify active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
   "sdd-archive.md":
@@ -215,6 +216,10 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
       description: "Break down implementation tasks checklist (tasks.md)",
       text: 'Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist, ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
     },
+    "sdd-apply": {
+      description: "Implement tasks from tasks.md checklist for the active change",
+      text: 'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and marking checkboxes "- [x]" as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
+    },
     "sdd-verify": {
       description: "Verify implementation: execute tests, lint, and audit compliance against specs",
       text: 'Verify the active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
@@ -267,6 +272,10 @@ export const GRANULAR_SKILLS: Record<string, { description: string; instructions
   "sdd-tasks": {
     description: "Break down implementation tasks checklist (tasks.md)",
     instructions: 'Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. Communicate in Spanish (keep technical terms in English). Present checklist, ask: "Checklist de Tasks listo. ¿Aprobás iniciar Implementation?" and STOP. Do NOT begin implementation.',
+  },
+  "sdd-apply": {
+    description: "Implement tasks from tasks.md checklist for the active change",
+    instructions: 'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and marking checkboxes "- [x]" as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
   },
   "sdd-verify": {
     description: "Verify implementation: execute tests, lint, and audit compliance against specs",

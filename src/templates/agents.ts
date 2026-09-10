@@ -43,6 +43,7 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
    - **GATE**: Present the checklist and ask: *"Checklist de Tasks listo. ¿Aprobás iniciar Implementation?"* -> **STOP and wait for user response**.
 6. **Apply Phase (Implementation)**:
    - Implement code task by task, marking checkboxes \`- [x]\` as work is completed.
+   - **GATE**: Present completed work and ask: *"Checklist de tareas completado. ¿Aprobás pasar a Verification?"* -> **STOP and wait for user response**.
 7. **Verify Phase (Quality Assurance)**:
    - Run automated test suites, type checking, and audit compliance against \`specs.md\`.
    - If failures occur, fix them until all checks are green.
@@ -60,6 +61,7 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 - \`/sdd-spec\`: Draft or refine specifications (Given/When/Then) and ask approval gate.
 - \`/sdd-design\`: Draft technical architecture decisions and ask approval gate.
 - \`/sdd-tasks\`: Break down tasks checklist and ask approval gate.
+- \`/sdd-apply\`: Implement code per tasks checklist and ask verification gate.
 - \`/sdd-verify\`: Run verification, audit compliance and ask archive approval gate.
 - \`/sdd-archive\`: Verify gate and archive completed change.
 `;
