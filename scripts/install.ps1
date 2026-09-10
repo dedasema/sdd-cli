@@ -135,12 +135,26 @@ function Inject-ZedSlashCommand([string]$settingsPath) {
     node -e '
     const fs = require("fs");
     const filePath = process.argv[1];
+    function stripJsonc(content) {
+        return content
+            .replace(/\/\*[\s\S]*?\*\//g, "")
+            .replace(/\/\/.*/g, "")
+            .replace(/,\s*([\]}])/g, "$1");
+    }
     let settings = {};
+    let leadingComments = "";
     if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, "utf8");
+        const firstBrace = raw.indexOf("{");
+        if (firstBrace > 0) {
+            leadingComments = raw.slice(0, firstBrace).trim();
+        }
         try {
-            settings = JSON.parse(fs.readFileSync(filePath, "utf8"));
+            settings = JSON.parse(stripJsonc(raw));
         } catch (e) {
-            settings = {};
+            console.error("    [WARN] Unable to parse " + filePath + " as JSON/JSONC: " + e.message);
+            console.error("    [WARN] Skipping slash command injection to protect existing settings.");
+            process.exit(0);
         }
     }
     if (!settings.assistant) settings.assistant = {};
@@ -149,7 +163,8 @@ function Inject-ZedSlashCommand([string]$settingsPath) {
         description: "Execute Spec-Driven Development (SDD) autonomous protocol",
         text: "Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Check if \"openspec/\" exists in workspace. If not, run \"sdd init\".\n2. For new features or fixes, run \"sdd new <feature-name>\".\n3. Follow proposal, specs (Given/When/Then), design, and tasks before coding.\n4. Never vibe-code: wait for user approval on specifications."
     };
-    fs.writeFileSync(filePath, JSON.stringify(settings, null, 2) + "\n", "utf8");
+    const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
+    fs.writeFileSync(filePath, output, "utf8");
     ' "$settingsPath"
 }
 
