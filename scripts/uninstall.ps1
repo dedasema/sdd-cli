@@ -57,38 +57,39 @@ function Remove-DelimitedRule([string]$filePath) {
 
 function Remove-ZedSlashCommand([string]$settingsPath) {
     if (Test-Path $settingsPath) {
-        node -e '
-        const fs = require("fs");
-        const filePath = process.argv[1];
-        function stripJsonc(content) {
-            return content
-                .replace(/\/\*[\s\S]*?\*\//g, "")
-                .replace(/\/\/.*/g, "")
-                .replace(/,\s*([\]}])/g, "$1");
-        }
-        if (fs.existsSync(filePath)) {
-            const raw = fs.readFileSync(filePath, "utf8");
-            const firstBrace = raw.indexOf("{");
-            const leadingComments = firstBrace > 0 ? raw.slice(0, firstBrace).trim() : "";
-            try {
-                const settings = JSON.parse(stripJsonc(raw));
-                if (settings.assistant && settings.assistant.slash_commands && settings.assistant.slash_commands.sdd) {
-                    delete settings.assistant.slash_commands.sdd;
-                    if (Object.keys(settings.assistant.slash_commands).length === 0) {
-                        delete settings.assistant.slash_commands;
-                    }
-                    if (Object.keys(settings.assistant).length === 0) {
-                        delete settings.assistant;
-                    }
-                    const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
-                    fs.writeFileSync(filePath, output, "utf8");
-                    console.log("    \x1b[33m[REMOVED] Zed Slash Command /sdd from " + filePath + "\x1b[0m");
-                }
-            } catch (e) {
-                console.error("    [WARN] Unable to parse " + filePath + " during removal: " + e.message);
+        $nodeScript = @'
+const fs = require("fs");
+const filePath = process.argv[2];
+function stripJsonc(content) {
+    return content
+        .replace(/\/\*[\s\S]*?\*\//g, "")
+        .replace(/\/\/.*/g, "")
+        .replace(/,\s*([\]}])/g, "$1");
+}
+if (fs.existsSync(filePath)) {
+    const raw = fs.readFileSync(filePath, "utf8");
+    const firstBrace = raw.indexOf("{");
+    const leadingComments = firstBrace > 0 ? raw.slice(0, firstBrace).trim() : "";
+    try {
+        const settings = JSON.parse(stripJsonc(raw));
+        if (settings.assistant && settings.assistant.slash_commands && settings.assistant.slash_commands.sdd) {
+            delete settings.assistant.slash_commands.sdd;
+            if (Object.keys(settings.assistant.slash_commands).length === 0) {
+                delete settings.assistant.slash_commands;
             }
+            if (Object.keys(settings.assistant).length === 0) {
+                delete settings.assistant;
+            }
+            const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
+            fs.writeFileSync(filePath, output, "utf8");
+            console.log("    \x1b[33m[REMOVED] Zed Slash Command /sdd from " + filePath + "\x1b[0m");
         }
-        ' "$settingsPath"
+    } catch (e) {
+        console.error("    [WARN] Unable to parse " + filePath + " during removal: " + e.message);
+    }
+}
+'@
+        $nodeScript | node - $settingsPath
     }
 }
 
