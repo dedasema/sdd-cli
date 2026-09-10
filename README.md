@@ -108,25 +108,35 @@ sdd status
 
 ## Commands
 
+### `sdd` (Default)
+When run without subcommands in an initialized repository, `sdd` automatically runs `sdd status`.
+
 ### `sdd init`
 Bootstraps the `openspec/` hierarchy in the current project:
 - `openspec/specs/`: Source of truth for living specifications.
 - `openspec/changes/`: Workspaces for active changes.
 - `openspec/changes/archive/`: Completed changes.
 - `openspec/config.yaml`: SDD lifecycle configuration.
-- `AGENTS.md`: Strict rules instructing AI coding assistants to never write code without approved specifications.
+- `AGENTS.md`: Non-destructively injected with strict SDD guidelines using delimiter tags (`<!-- sdd-rules:start -->`).
 
-### `sdd new <change-name>`
-Creates a new change folder `openspec/changes/<change-name>/` with standardized starter templates:
-- `proposal.md`
-- `specs.md`
-- `design.md`
-- `tasks.md`
-
-Enforces `kebab-case` naming to ensure consistency across operating systems.
+### `sdd new [change-name]`
+Creates a new change folder `openspec/changes/<change-name>/` with initial `proposal.md` only (subsequent artifacts are created Just-In-Time per phase).
+- If `<change-name>` is omitted, prompts interactively for a kebab-case name.
+- If active work-in-progress changes exist, displays a warning to prevent accumulating unmanaged WIP.
 
 ### `sdd status`
-Scans `openspec/changes/` and parses `tasks.md` files to display a visual completion percentage for every active change.
+Scans `openspec/changes/`, deterministically detects the current active phase (`Proposal`, `Specs`, `Design`, `Tasks`, `Apply`, `Verify`), renders a visual artifact pipeline (`proposal.md ✓ | specs.md ✓ | design.md ⏳ | tasks.md ·`), and calculates task progress.
+
+### `sdd verify [change-name]`
+Audits target change (auto-selects if single active):
+- Verifies that all 4 artifacts exist and are non-empty.
+- Verifies that 100% of task checklist items in `tasks.md` are marked completed (`- [x]`).
+
+### `sdd archive [change-name]`
+Closes the change lifecycle (auto-selects if single active):
+- Verifies task completion (requires confirmation or `-f, --force` if incomplete).
+- Promotes delta specs to living specifications in `openspec/specs/<change-name>.md`.
+- Moves the change directory to `openspec/changes/archive/YYYY-MM-DD-<change-name>/`.
 
 ---
 

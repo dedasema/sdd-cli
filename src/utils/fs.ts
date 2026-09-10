@@ -37,7 +37,7 @@ export function parseTasksProgress(tasksContent: string): {
   completed: number;
   percentage: number;
 } {
-  const taskRegex = /-\s*\[([ xX])\]/g;
+  const taskRegex = /^\s*[-*]\s*\[([ xX])\]/gm;
   let total = 0;
   let completed = 0;
 

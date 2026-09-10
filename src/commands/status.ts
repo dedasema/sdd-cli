@@ -9,12 +9,50 @@ export interface StatusOptions {
   silent?: boolean;
 }
 
+export type SDDPhase = "Proposal" | "Specs" | "Design" | "Tasks" | "Apply" | "Verify" | "Unknown";
+
+export interface ArtifactStatus {
+  proposal: boolean;
+  specs: boolean;
+  design: boolean;
+  tasks: boolean;
+}
+
 export interface ChangeStatusResult {
   name: string;
+  phase: SDDPhase;
+  artifacts: ArtifactStatus;
   hasTasks: boolean;
   total: number;
   completed: number;
   percentage: number;
+}
+
+export function computePhase(
+  artifacts: ArtifactStatus,
+  progress: { total: number; completed: number; percentage: number }
+): SDDPhase {
+  if (artifacts.tasks) {
+    if (progress.percentage === 100 && progress.total > 0) return "Verify";
+    if (progress.completed > 0) return "Apply";
+    return "Tasks";
+  }
+  if (artifacts.design) return "Design";
+  if (artifacts.specs) return "Specs";
+  if (artifacts.proposal) return "Proposal";
+  return "Unknown";
+}
+
+export function renderPipeline(phase: SDDPhase, artifacts: ArtifactStatus): string {
+  const mark = (exists: boolean, isCurrent: boolean) =>
+    exists ? pc.green("✓") : isCurrent ? pc.yellow("⏳") : pc.dim("·");
+
+  return [
+    `proposal.md ${mark(artifacts.proposal, phase === "Proposal")}`,
+    `specs.md ${mark(artifacts.specs, phase === "Specs")}`,
+    `design.md ${mark(artifacts.design, phase === "Design")}`,
+    `tasks.md ${mark(artifacts.tasks, phase === "Tasks" || phase === "Apply" || phase === "Verify")}`,
+  ].join(pc.dim("  |  "));
 }
 
 export async function statusCommand(options: StatusOptions = {}): Promise<{
@@ -57,32 +95,55 @@ export async function statusCommand(options: StatusOptions = {}): Promise<{
   const results: ChangeStatusResult[] = [];
 
   for (const dir of activeChangeDirs) {
-    const tasksPath = path.join(changesDir, dir.name, "tasks.md");
-    const hasTasks = await fileExists(tasksPath);
+    const changeFolder = path.join(changesDir, dir.name);
+    const proposalPath = path.join(changeFolder, "proposal.md");
+    const specsPath = path.join(changeFolder, "specs.md");
+    const designPath = path.join(changeFolder, "design.md");
+    const tasksPath = path.join(changeFolder, "tasks.md");
+
+    const [hasProposal, hasSpecs, hasDesign, hasTasks] = await Promise.all([
+      fileExists(proposalPath),
+      fileExists(specsPath),
+      fileExists(designPath),
+      fileExists(tasksPath),
+    ]);
+
+    const artifacts: ArtifactStatus = {
+      proposal: hasProposal,
+      specs: hasSpecs,
+      design: hasDesign,
+      tasks: hasTasks,
+    };
+
+    let total = 0;
+    let completed = 0;
+    let percentage = 0;
 
     if (hasTasks) {
       const content = await fs.readFile(tasksPath, "utf-8");
-      const { total, completed, percentage } = parseTasksProgress(content);
-      results.push({
-        name: dir.name,
-        hasTasks: true,
-        total,
-        completed,
-        percentage,
-      });
-    } else {
-      results.push({
-        name: dir.name,
-        hasTasks: false,
-        total: 0,
-        completed: 0,
-        percentage: 0,
-      });
+      const progress = parseTasksProgress(content);
+      total = progress.total;
+      completed = progress.completed;
+      percentage = progress.percentage;
     }
+
+    const phase = computePhase(artifacts, { total, completed, percentage });
+
+    results.push({
+      name: dir.name,
+      phase,
+      artifacts,
+      hasTasks,
+      total,
+      completed,
+      percentage,
+    });
   }
 
   if (!options.silent) {
     for (const change of results) {
+      p.log.step(`${pc.bold(change.name)} ${pc.cyan(`[Phase: ${change.phase}]`)}`);
+      p.log.message(`  ${renderPipeline(change.phase, change.artifacts)}`);
       if (change.hasTasks) {
         const color =
           change.percentage === 100
@@ -90,14 +151,8 @@ export async function statusCommand(options: StatusOptions = {}): Promise<{
             : change.percentage > 0
             ? pc.yellow
             : pc.dim;
-        const progressLabel = `${change.completed}/${change.total} tasks (${change.percentage}%)`;
-        p.log.step(
-          `${pc.bold(change.name)}: ${color(progressLabel)}`
-        );
-      } else {
-        p.log.step(
-          `${pc.bold(change.name)}: ${pc.yellow("tasks.md pending creation")}`
-        );
+        const progressLabel = `${change.completed}/${change.total} tasks completed (${change.percentage}%)`;
+        p.log.message(`  ${pc.dim("Progress:")} ${color(progressLabel)}`);
       }
     }
     p.outro(pc.dim(`${results.length} active change(s) tracked.`));

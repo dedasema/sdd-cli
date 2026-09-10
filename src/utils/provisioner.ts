@@ -135,9 +135,9 @@ export const CLAUDE_COMMANDS: Record<string, string> = {
   "sdd-apply.md":
     'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and marking checkboxes \'- [x]\' as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
   "sdd-verify.md":
-    'Verify active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
+    'Verify active change: audit all 4 artifacts and ensure tasks in tasks.md are 100% completed (run \'sdd verify\' or inspect directly). Run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
   "sdd-archive.md":
-    'Ensure verification is complete and tests pass. Communicate in Spanish. Confirm with user: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?". Upon confirmation, move change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and update living specs in openspec/specs/.',
+    'Ensure verification is complete and tests pass. Communicate in Spanish. Confirm with user: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?". Upon confirmation, archive change (run \'sdd archive\' or move change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and promote specs.md to openspec/specs/<feature>.md).',
 };
 
 export async function injectDelimitedRule(filePath: string, content: string): Promise<void> {
@@ -222,11 +222,11 @@ export async function injectZedSettings(settingsPath: string): Promise<void> {
     },
     "sdd-verify": {
       description: "Verify implementation: execute tests, lint, and audit compliance against specs",
-      text: 'Verify the active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
+      text: 'Verify the active change: audit all 4 artifacts and ensure all tasks in tasks.md are checked (run "sdd verify" or inspect files directly). Run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
     },
     "sdd-archive": {
       description: "Verify and archive completed SDD change, syncing living specs",
-      text: 'Ensure verification is complete and tests pass. Communicate in Spanish. Confirm with the user: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?". Upon confirmation, move the change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and update living specs in openspec/specs/.',
+      text: 'Ensure verification is complete and tests pass. Communicate in Spanish. Confirm with the user: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?". Upon confirmation, archive the change (run "sdd archive" or move the change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and promote specs.md to openspec/specs/<feature>.md).',
     },
   };
 
@@ -251,7 +251,7 @@ export const GRANULAR_SKILLS: Record<string, { description: string; instructions
   },
   "sdd-init": {
     description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
-    instructions: 'Initialize SDD / OpenSpec structure in current workspace. Create openspec/specs/, openspec/changes/archive/, openspec/config.yaml, and AGENTS.md directly using file tools (or run "sdd init"). Prefer file creation tools to avoid terminal permission dialogs. Always communicate with user in Spanish.',
+    instructions: 'Initialize "openspec/" structure and root AGENTS.md directly using file tools (or run "sdd init"). Always communicate with the user in Spanish.',
   },
   "sdd-new": {
     description: "Scaffold a new SDD change workspace",
@@ -259,7 +259,7 @@ export const GRANULAR_SKILLS: Record<string, { description: string; instructions
   },
   "sdd-propose": {
     description: "Draft or refine the SDD change proposal (proposal.md)",
-    instructions: 'Help draft or refine proposal.md for the active change. Communicate in Spanish (keep technical terms like tests, specs, design in English). Address intent, scope, and capabilities. Resolve doubts with user. Present summary, ask: "Propuesta lista. ¿Aprobás avanzar a Specifications?" and STOP. Do NOT advance to specifications.',
+    instructions: 'Help draft or refine proposal.md for the active change. Communicate in Spanish (keep technical terms in English). Address intent, scope, capabilities, and resolve user doubts. Present summary, ask: "Propuesta lista. ¿Aprobás avanzar a Specifications?" and STOP. Do NOT advance to specifications.',
   },
   "sdd-spec": {
     description: "Draft or refine formal specifications (specs.md) with Given/When/Then scenarios",
@@ -275,15 +275,15 @@ export const GRANULAR_SKILLS: Record<string, { description: string; instructions
   },
   "sdd-apply": {
     description: "Implement tasks from tasks.md checklist for the active change",
-    instructions: 'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and marking checkboxes "- [x]" as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
+    instructions: 'Implement pending tasks from tasks.md for the active change. Communicate in Spanish (keep technical terms in English). Read proposal.md, specs.md, design.md, and tasks.md. Implement each task step-by-step, running tests and checking off checkboxes "- [x]" as they are completed. When all tasks are done, ask: "Checklist de tareas completado. ¿Aprobás pasar a Verification?" and STOP.',
   },
   "sdd-verify": {
     description: "Verify implementation: execute tests, lint, and audit compliance against specs",
-    instructions: 'Verify the active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
+    instructions: 'Verify the active change: audit all 4 artifacts and verify tasks in tasks.md are 100% completed (run "sdd verify" or inspect directly). Run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. Communicate in Spanish (keep technical terms in English). When green, ask: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?" and STOP.',
   },
   "sdd-archive": {
     description: "Verify and archive completed SDD change, syncing living specs",
-    instructions: 'Ensure verification is complete and tests pass. Communicate in Spanish. Confirm with user: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?". Upon confirmation, move the change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and update living specs in openspec/specs/.',
+    instructions: 'Ensure verification is complete and tests pass. Communicate in Spanish. Confirm with user: "Todos los tests pasaron y las specs están verificadas. ¿Aprobás archivar este cambio?". Upon confirmation, archive change (run "sdd archive" or move change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and promote specs.md to openspec/specs/<feature>.md).',
   },
 };
 
