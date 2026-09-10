@@ -11,7 +11,7 @@ import { setupCommand } from "./commands/setup.js";
 import { fileExists } from "./utils/fs.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-let pkgVersion = "0.1.3";
+let pkgVersion = "0.2.0";
 try {
   const pkgPath = path.resolve(__dirname, "../package.json");
   const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
