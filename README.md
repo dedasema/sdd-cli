@@ -23,7 +23,29 @@ When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Win
 
 ## Quick Start
 
-### Option A: Run directly with `npx` (No installation needed)
+### 🚀 Option 1: One-Line Universal Install (Recommended)
+
+Installs the CLI globally **AND** automatically configures global SDD rules and slash commands (`/sdd`) for Cursor and Claude Code in seconds:
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/install.ps1 | iex
+```
+
+**macOS / Linux:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/install.sh | bash
+```
+
+Once installed, open any project and type in your editor chat:
+- `"Quiero empezar este proyecto con SDD"`
+- Or use the slash command: `/sdd <feature-name>`
+
+Your AI will handle initialization and scaffolding autonomously in the background. Zero terminal required!
+
+---
+
+### Option 2: Run directly with `npx` (No installation needed)
 
 ```bash
 # 1. Initialize SDD and inject AGENTS.md guidelines in your repository
@@ -36,7 +58,7 @@ npx @dedasema/sdd-cli new user-authentication
 npx @dedasema/sdd-cli status
 ```
 
-### Option B: Install globally for the short `sdd` command
+### Option 3: Install globally via npm/pnpm
 
 ```bash
 # Install once globally

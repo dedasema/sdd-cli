@@ -60,6 +60,9 @@ describe("SDD CLI Commands Integration", () => {
     expect(await fileExists(path.join(tempDir, "openspec", "config.yaml"))).toBe(true);
     expect(await fileExists(path.join(tempDir, "AGENTS.md"))).toBe(true);
 
+    const agentsContent = await fs.readFile(path.join(tempDir, "AGENTS.md"), "utf-8");
+    expect(agentsContent).toContain("autonomously execute `sdd new <feature-name>`");
+
     // Verify idempotency
     const secondRun = await initCommand({ cwd: tempDir, silent: true });
     expect(secondRun.success).toBe(true);

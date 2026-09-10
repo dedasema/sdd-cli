@@ -28,8 +28,9 @@ As an AI coding assistant, you MUST follow this protocol before writing or modif
 ## When Asked to Build a Feature or Fix a Bug
 
 1. Check if an active change exists under \`openspec/changes/\`.
-2. If not, instruct the user to run \`sdd new <feature-name>\` or offer to initialize the change directory.
+2. If no active change exists, you MUST autonomously execute \`sdd new <feature-name>\` in the background using your terminal tool. DO NOT ask the user to open a terminal or run the command manually.
 3. Help the developer draft the proposal, specifications, design, and tasks in that order.
-4. Only implement code when checking off items in \`tasks.md\`.
+4. Obtain user approval on the plan before implementation.
+5. Only implement code when checking off items in \`tasks.md\`.
 `;
 }
