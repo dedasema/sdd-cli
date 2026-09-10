@@ -11,14 +11,33 @@ The project MUST provide single-line installation scripts for Windows (`install.
 
 ### Requirement: Target Supported AI Environments
 The installer scripts MUST provision configurations for:
-1. **Antigravity 2.0**: `~/.gemini/config/skills/sdd/SKILL.md` (Native `/sdd` slash command + skill)
-2. **Antigravity CLI (`agy`)**: `~/.gemini/skills/sdd/SKILL.md` (Native `/sdd` slash command + skill)
-3. **OpenAI Codex**: `~/.codex/AGENTS.md` (Global rule) + `~/.codex/skills/sdd/SKILL.md`
-4. **VS Code Copilot**: `~/.copilot/copilot-instructions.md` (Global rule) + `~/.copilot/skills/sdd/SKILL.md`
-5. **OpenCode**: `~/.config/opencode/AGENTS.md` (Global rule) + `~/.config/opencode/skills/sdd/SKILL.md`
-6. **Claude Code**: `~/.claude/CLAUDE.md` (Global rule) + `~/.claude/commands/sdd.md` (`/sdd`) + skill
-7. **Cursor**: `~/.cursor/rules/sdd.mdc` (`alwaysApply: true`) + `~/.cursor/skills/sdd/SKILL.md`
-8. **Zed**: `%APPDATA%\Zed` or `~/.config/zed` (`AGENTS.md` + `settings.json` slash command `/sdd` + `skills/sdd/SKILL.md`)
+1. **Antigravity 2.0**: `~/.gemini/config/skills/sdd/SKILL.md` (Native `/sdd` and `/sdd-*` slash commands + skill)
+2. **Antigravity CLI (`agy`)**: `~/.gemini/skills/sdd/SKILL.md` (Native `/sdd` and `/sdd-*` slash commands + skill)
+3. **OpenAI Codex**: `~/.codex/AGENTS.md` (Global rule with phase gates) + `~/.codex/skills/sdd/SKILL.md`
+4. **VS Code Copilot**: `~/.copilot/copilot-instructions.md` (Global rule with phase gates) + `~/.copilot/skills/sdd/SKILL.md`
+5. **OpenCode**: `~/.config/opencode/AGENTS.md` (Global rule with phase gates) + `~/.config/opencode/skills/sdd/SKILL.md`
+6. **Claude Code**: `~/.claude/CLAUDE.md` (Global rule) + 9 native commands in `~/.claude/commands/sdd*.md` + skill
+7. **Cursor**: `~/.cursor/rules/sdd.mdc` (`alwaysApply: true`, 7-phase lifecycle) + `~/.cursor/skills/sdd/SKILL.md`
+8. **Zed**: `%APPDATA%\Zed` or `~/.config/zed` (`AGENTS.md` + `settings.json` 9 slash commands under `assistant.slash_commands.*` + `skills/sdd/SKILL.md`)
+
+### Requirement: Granular Slash Commands Suite
+The system MUST support a 9-command suite across environments:
+- `/sdd`: Smart orchestrator (audits repo state, inits if missing, creates change, or resumes active phase)
+- `/sdd-init`: Project initialization and bootstrap
+- `/sdd-new`: Change workspace scaffolding
+- `/sdd-propose`: Proposal drafting and scope clarification
+- `/sdd-spec`: Formal specification drafting (RFC 2119 + Given/When/Then)
+- `/sdd-design`: Technical design and architecture decisions
+- `/sdd-tasks`: Atomic implementation checklist breakdown
+- `/sdd-verify`: Verification execution (tests, lint, spec compliance)
+- `/sdd-archive`: Formal verification check, confirmation gate, and change archival
+
+### Requirement: Interactive Phase Gates & Clarification Protocol
+The provisioned assistant rules MUST strictly mandate:
+1. Deterministic state on disk: inspect `openspec/` and never repeat `sdd init` if it already exists.
+2. Zero doubts before gating: formulate clarifying questions to resolve any ambiguity before proposing phase transitions.
+3. Explicit human-in-the-loop checkpoints: require user approval at the end of each phase before generating artifacts or code for the next phase.
+4. Gated archival: verify tests and specs first, then request explicit approval before moving to `openspec/changes/archive/`.
 
 ### Requirement: Non-Destructive Delimited Injection & Excision
 When injecting global rules into shared user files (`CLAUDE.md`, `copilot-instructions.md`, `AGENTS.md`, `settings.json`), the scripts MUST protect pre-existing configurations. Markdown files use comment markers (`<!-- >>> SDD PROTOCOL >>> -->` ... `<!-- <<< SDD PROTOCOL <<< -->`) and JSON configuration files surgically update only the SDD keys.
@@ -30,4 +49,4 @@ The installer and uninstaller scripts MUST prompt the user with an interactive m
 The provisioned skills and rules MUST instruct each AI assistant to autonomously detect `openspec/`, run `sdd init` in the background when missing, and run `sdd new <feature>` for each new change without requiring manual developer terminal commands.
 
 ### Requirement: Single-Line Clean Uninstallation
-The project MUST provide single-line uninstallation scripts for Windows (`uninstall.ps1`) and Unix/macOS (`uninstall.sh`) that cleanly purge all global `sdd/` skill directories, standalone rules/commands, and delimited rule blocks without affecting other user configurations, and remove `@dedasema/sdd-cli` globally.
+The project MUST provide single-line uninstallation scripts for Windows (`uninstall.ps1`) and Unix/macOS (`uninstall.sh`) that cleanly purge all global `sdd/` skill directories, standalone rules, all 9 slash commands, and delimited rule blocks without affecting other user configurations, and remove `@dedasema/sdd-cli` globally.

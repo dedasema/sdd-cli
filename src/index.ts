@@ -1,14 +1,29 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 import { Command } from "commander";
 import { initCommand } from "./commands/init.js";
 import { newCommand } from "./commands/new.js";
 import { statusCommand } from "./commands/status.js";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+let pkgVersion = "0.1.3";
+try {
+  const pkgPath = path.resolve(__dirname, "../package.json");
+  const pkg = JSON.parse(readFileSync(pkgPath, "utf8"));
+  if (pkg.version) {
+    pkgVersion = pkg.version;
+  }
+} catch {
+  // fallback to default
+}
 
 const program = new Command();
 
 program
   .name("sdd")
   .description("Agnostic CLI for Spec-Driven Development with AI agents")
-  .version("0.1.0");
+  .version(pkgVersion);
 
 program
   .command("init")

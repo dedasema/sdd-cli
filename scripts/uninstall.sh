@@ -76,9 +76,9 @@ remove_delimited_rule() {
 remove_zed_slash_command() {
     local settings_path="$1"
     if [ -f "$settings_path" ]; then
-        node -e '
+        node - "$settings_path" << 'NODE_SCRIPT'
         const fs = require("fs");
-        const filePath = process.argv[1];
+        const filePath = process.argv[2];
         function stripJsonc(content) {
             return content
                 .replace(/\/\*[\s\S]*?\*\//g, "")
@@ -91,23 +91,32 @@ remove_zed_slash_command() {
             const leadingComments = firstBrace > 0 ? raw.slice(0, firstBrace).trim() : "";
             try {
                 const settings = JSON.parse(stripJsonc(raw));
-                if (settings.assistant && settings.assistant.slash_commands && settings.assistant.slash_commands.sdd) {
-                    delete settings.assistant.slash_commands.sdd;
+                const sddCommands = ["sdd", "sdd-init", "sdd-new", "sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks", "sdd-verify", "sdd-archive"];
+                let modified = false;
+                if (settings.assistant && settings.assistant.slash_commands) {
+                    for (const cmd of sddCommands) {
+                        if (settings.assistant.slash_commands[cmd]) {
+                            delete settings.assistant.slash_commands[cmd];
+                            modified = true;
+                        }
+                    }
                     if (Object.keys(settings.assistant.slash_commands).length === 0) {
                         delete settings.assistant.slash_commands;
                     }
                     if (Object.keys(settings.assistant).length === 0) {
                         delete settings.assistant;
                     }
-                    const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
-                    fs.writeFileSync(filePath, output, "utf8");
-                    console.log("    \x1b[33m[REMOVED] Zed Slash Command /sdd from " + filePath + "\x1b[0m");
+                    if (modified) {
+                        const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
+                        fs.writeFileSync(filePath, output, "utf8");
+                        console.log("    \x1b[33m[REMOVED] Zed SDD Slash Commands from " + filePath + "\x1b[0m");
+                    }
                 }
             } catch (e) {
                 console.error("    [WARN] Unable to parse " + filePath + " during removal: " + e.message);
             }
         }
-        ' "$settings_path"
+NODE_SCRIPT
     fi
 }
 
@@ -160,11 +169,11 @@ for item in $SELECTED; do
                 echo -e "\033[33m    [REMOVED] Skill -> $target\033[0m"
             fi
             remove_delimited_rule "$HOME_DIR/.claude/CLAUDE.md"
-            cmd_target="$HOME_DIR/.claude/commands/sdd.md"
-            if [ -f "$cmd_target" ]; then
-                rm -f "$cmd_target"
-                echo -e "\033[33m    [REMOVED] Claude Command -> $cmd_target\033[0m"
-            fi
+            claude_cmds=("sdd.md" "sdd-init.md" "sdd-new.md" "sdd-propose.md" "sdd-spec.md" "sdd-design.md" "sdd-tasks.md" "sdd-verify.md" "sdd-archive.md")
+            for c in "${claude_cmds[@]}"; do
+                rm -f "$HOME_DIR/.claude/commands/$c"
+            done
+            echo -e "\033[33m    [REMOVED] Claude Commands (9 files) -> $HOME_DIR/.claude/commands\033[0m"
             ;;
         7)
             target="$HOME_DIR/.cursor/skills/sdd"

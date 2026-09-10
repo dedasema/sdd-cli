@@ -98,12 +98,36 @@ $sddRuleBlock = @'
 <!-- >>> SDD PROTOCOL >>> -->
 # Spec-Driven Development (SDD) Autonomous Protocol
 
-When the user asks to create a project, develop a feature, or use Spec-Driven Development:
-1. Check if 'openspec/' exists in the root of the current workspace.
-2. If 'openspec/' does NOT exist, autonomously execute 'sdd init' in the background using your terminal tool before writing code.
-3. For any new feature or bug fix, autonomously execute 'sdd new <feature-name>' in the background to create the change workspace.
-4. Fill in the proposal, specs (Given/When/Then), design, and tasks before implementing code.
-5. Never vibe-code: wait for user approval on specifications before touching code.
+This project strictly adheres to Spec-Driven Development (SDD).
+As an AI coding assistant, you MUST follow this protocol before writing or modifying any implementation code.
+
+## Core Rules
+
+1. NO VIBE-CODING: Never write implementation code directly from a casual prompt without an approved specification and task checklist.
+2. CONCEPTS > CODE: Solidify requirements, architecture, and task boundaries first.
+3. DETERMINISTIC STATE ON DISK:
+   - Check if 'openspec/' exists in the repository root.
+   - If 'openspec/' does NOT exist: autonomously run 'sdd init' in the background using your terminal tool before doing anything else.
+   - If 'openspec/' already exists: NEVER re-run 'sdd init'. Proceed directly to 'sdd new <feature-name>'.
+4. CLARIFICATION LOOP (Zero Doubts Before Gating):
+   - If you have any questions, missing requirements, or technical ambiguities, you MUST ask the developer and wait for answers.
+   - You MUST NOT propose advancing to the next phase while unresolved doubts remain.
+5. HUMAN-IN-THE-LOOP PHASE GATES:
+   - You MUST enforce explicit checkpoints at the end of each phase.
+   - You MUST NOT generate artifacts or code for the next phase until the user explicitly confirms and approves advancing.
+
+## The 7-Phase Gated Lifecycle
+
+1. Bootstrap & Scaffolding: Check 'openspec/' on disk. Run 'sdd init' if missing. For new features/fixes, run 'sdd new <feature-name>'.
+2. Proposal Phase ('proposal.md'): Draft scope and intent. GATE: Present summary and ask: "Proposal ready. Do you approve proceeding to Specifications?"
+3. Specifications Phase ('specs.md'): Write RFC 2119 Given/When/Then scenarios. GATE: Present scenarios and ask: "Specifications ready. Do you approve proceeding to Technical Design?"
+4. Design Phase ('design.md'): Formulate architecture decisions and tradeoffs. GATE: Present design and ask: "Design ready. Do you approve proceeding to the Tasks checklist?"
+5. Tasks Phase ('tasks.md'): Break down atomic checklist. GATE: Present checklist and ask: "Tasks checklist ready. Do you approve starting Implementation?"
+6. Apply Phase (Implementation): Implement code task by task, checking off '- [x]'.
+7. Verify Phase (Quality Assurance): Run tests, type checks, and audit compliance against specs. Fix any errors. GATE: Ask: "All tests pass and specs verified. Do you approve archiving this change?"
+8. Archive Phase (Sync & Finalization): Move change to 'openspec/changes/archive/YYYY-MM-DD-<feature>/' and update living specs in 'openspec/specs/'.
+
+## Supported Commands & Triggers: /sdd, /sdd-init, /sdd-new, /sdd-propose, /sdd-spec, /sdd-design, /sdd-tasks, /sdd-verify, /sdd-archive.
 <!-- <<< SDD PROTOCOL <<< -->
 '@
 
@@ -159,10 +183,50 @@ if (fs.existsSync(filePath)) {
 }
 if (!settings.assistant) settings.assistant = {};
 if (!settings.assistant.slash_commands) settings.assistant.slash_commands = {};
-settings.assistant.slash_commands.sdd = {
-    description: "Execute Spec-Driven Development (SDD) autonomous protocol",
-    text: "Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Check if \"openspec/\" exists in workspace. If not, run \"sdd init\".\n2. For new features or fixes, run \"sdd new <feature-name>\".\n3. Follow proposal, specs (Given/When/Then), design, and tasks before coding.\n4. Never vibe-code: wait for user approval on specifications."
+
+const commands = {
+    "sdd": {
+        description: "Execute Spec-Driven Development (SDD) smart orchestrator with interactive phase gates",
+        text: "Execute the Spec-Driven Development (SDD) lifecycle in this project:\n1. Check if \"openspec/\" exists on disk. If not, run \"sdd init\".\n2. If no active change exists, ask for feature name and run \"sdd new <feature-name>\".\n3. If active change exists, identify current phase and resume.\n4. Resolve all clarifying questions before proposing phase progression.\n5. Enforce explicit user approval gates at each phase (Proposal -> Specs -> Design -> Tasks -> Apply -> Verify -> Archive)."
+    },
+    "sdd-init": {
+        description: "Initialize Spec-Driven Development (SDD) / OpenSpec in current workspace",
+        text: "Check if \"openspec/\" exists. If not, execute \"sdd init\" via the terminal tool to bootstrap directory hierarchy, config, and AGENTS.md guidelines."
+    },
+    "sdd-new": {
+        description: "Scaffold a new SDD change workspace",
+        text: "Prompt the user for the feature or fix name (kebab-case) and execute \"sdd new <feature-name>\" via the terminal tool to scaffold the change workspace."
+    },
+    "sdd-propose": {
+        description: "Draft or refine the SDD change proposal (proposal.md)",
+        text: "Help draft or refine proposal.md for the active change. Address intent, scope, and capabilities. Resolve any doubts with the user, then ask for explicit approval to advance to Specifications."
+    },
+    "sdd-spec": {
+        description: "Draft or refine formal specifications (specs.md) with Given/When/Then scenarios",
+        text: "Help draft or refine specs.md for the active change. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. When complete, ask for explicit approval to advance to Technical Design."
+    },
+    "sdd-design": {
+        description: "Draft technical design (design.md) with architecture decisions and tradeoffs",
+        text: "Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target file changes. When complete, ask for approval to advance to Tasks checklist."
+    },
+    "sdd-tasks": {
+        description: "Break down implementation tasks checklist (tasks.md)",
+        text: "Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. When complete, ask for explicit approval to begin Implementation."
+    },
+    "sdd-verify": {
+        description: "Verify implementation: execute tests, lint, and audit compliance against specs",
+        text: "Verify the active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. When green, ask: \"All tests pass and specs verified. Do you approve archiving this change?\""
+    },
+    "sdd-archive": {
+        description: "Verify and archive completed SDD change, syncing living specs",
+        text: "Ensure verification is complete and tests pass. Confirm with the user: \"Do you approve archiving this change?\". Upon confirmation, move the change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and update living specs in openspec/specs/."
+    }
 };
+
+for (const [name, def] of Object.entries(commands)) {
+    settings.assistant.slash_commands[name] = def;
+}
+
 const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
 fs.writeFileSync(filePath, output, "utf8");
 '@
@@ -229,15 +293,24 @@ if ($selected -contains 6) {
     if (-not (Test-Path $claudeDir)) {
         New-Item -ItemType Directory -Path $claudeDir -Force | Out-Null
     }
-    $claudeCmdPath = Join-Path $claudeDir "sdd.md"
-    $claudeCmdContent = @'
-Execute the Spec-Driven Development (SDD) lifecycle in this project.
-If 'openspec/' does not exist, run 'sdd init' via the terminal tool to bootstrap the environment.
-If a change name is given as an argument, run 'sdd new $ARGUMENTS'.
-Always follow the proposal, specs, design, and tasks phases before writing code.
-'@
-    Set-Content -Path $claudeCmdPath -Value $claudeCmdContent -Encoding UTF8
-    Write-Host "    [OK] Claude Code (Slash Command)    -> $claudeCmdPath" -ForegroundColor DarkCyan
+
+    $claudeCommands = @{
+        "sdd.md"         = "Execute the Spec-Driven Development (SDD) smart orchestrator in this project:`n1. Check if 'openspec/' exists on disk. If not, run 'sdd init'.`n2. If no active change, ask user for feature name and run 'sdd new $ARGUMENTS'.`n3. If active change exists, identify current phase and resume.`n4. Resolve all clarifying questions before proposing phase progression.`n5. Enforce explicit user approval gates at each phase (Proposal -> Specs -> Design -> Tasks -> Apply -> Verify -> Archive)."
+        "sdd-init.md"    = "Check if 'openspec/' exists in workspace. If not, run 'sdd init' via the terminal tool to bootstrap the environment."
+        "sdd-new.md"     = "Prompt user for feature name (kebab-case) if not provided in arguments ($ARGUMENTS) and execute 'sdd new <feature-name>' via the terminal tool."
+        "sdd-propose.md" = "Help draft or refine proposal.md for the active change. Address intent, scope, and capabilities. Resolve doubts with user, then ask for explicit approval to advance to Specifications."
+        "sdd-spec.md"    = "Help draft or refine specs.md for the active change. Use RFC 2119 keywords and GIVEN/WHEN/THEN scenarios. When complete, ask for explicit approval to advance to Technical Design."
+        "sdd-design.md"  = "Help draft or refine design.md for the active change. Document technical approach, architecture decisions, tradeoffs, and target files. When complete, ask for approval to advance to Tasks checklist."
+        "sdd-tasks.md"   = "Help draft or refine tasks.md for the active change. Create atomic, verifiable checkboxes. When complete, ask for explicit approval to begin Implementation."
+        "sdd-verify.md"  = "Verify active change: run test suites, static analysis, and verify all requirements in specs.md. Remediate any failures. When green, ask: 'All tests pass and specs verified. Do you approve archiving this change?'"
+        "sdd-archive.md" = "Ensure verification is complete and tests pass. Confirm with user: 'Do you approve archiving this change?'. Upon confirmation, move change to openspec/changes/archive/YYYY-MM-DD-<feature>/ and update living specs in openspec/specs/."
+    }
+
+    foreach ($cmdFile in $claudeCommands.Keys) {
+        $filePath = Join-Path $claudeDir $cmdFile
+        Set-Content -Path $filePath -Value $claudeCommands[$cmdFile] -Encoding UTF8
+    }
+    Write-Host "    [OK] Claude Code (9 Slash Commands) -> $claudeDir" -ForegroundColor DarkCyan
 }
 
 # [7] Cursor: ~/.cursor/rules/sdd.mdc
@@ -249,19 +322,33 @@ if ($selected -contains 7) {
     $cursorRulePath = Join-Path $cursorDir "sdd.mdc"
     $cursorRuleContent = @'
 ---
-description: Spec-Driven Development (SDD) Autonomous AI Protocol
+description: Spec-Driven Development (SDD) Autonomous AI Protocol with Interactive Phase Gates
 globs: *
 alwaysApply: true
 ---
 
 # SDD Autonomous Assistant Protocol
 
-When the user asks to create a project, develop a feature, or use Spec-Driven Development:
-1. Check if 'openspec/' exists in the root of the current project workspace.
-2. If 'openspec/' does NOT exist, autonomously execute 'sdd init' in the background using your terminal tool.
-3. For any new feature or bug fix, autonomously execute 'sdd new <feature-name>' in the background to create the change workspace.
-4. Fill in the proposal, specs (Given/When/Then), design, and tasks before implementing code.
-5. Never vibe-code: wait for user approval on specifications before touching code.
+This workspace strictly adheres to Spec-Driven Development (SDD).
+
+## Core Rules:
+1. NO VIBE-CODING: Never write code without approved specifications and tasks.
+2. DETERMINISTIC STATE ON DISK: Check if 'openspec/' exists. If not, run 'sdd init'. If it exists, NEVER re-run 'sdd init'.
+3. CLARIFICATION LOOP: Ask all clarifying questions until zero doubts remain before proposing phase progression.
+4. HUMAN-IN-THE-LOOP PHASE GATES: Stop and obtain explicit user approval at each phase boundary.
+
+## 7-Phase Lifecycle:
+1. Bootstrap & Scaffolding ('sdd init' / 'sdd new <feature>')
+2. Proposal ('proposal.md' -> GATE: ask user approval)
+3. Specifications ('specs.md' -> GATE: ask user approval)
+4. Design ('design.md' -> GATE: ask user approval)
+5. Tasks ('tasks.md' -> GATE: ask user approval)
+6. Apply (Implement code per tasks checklist)
+7. Verify (Run tests & audit specs -> GATE: ask user approval to archive)
+8. Archive (Move change to archive/ and update living specs)
+
+## Supported Triggers:
+/sdd, /sdd-init, /sdd-new, /sdd-propose, /sdd-spec, /sdd-design, /sdd-tasks, /sdd-verify, /sdd-archive.
 '@
     Set-Content -Path $cursorRulePath -Value $cursorRuleContent -Encoding UTF8
     Write-Host "    [OK] Cursor (Global Rule)           -> $cursorRulePath" -ForegroundColor DarkCyan

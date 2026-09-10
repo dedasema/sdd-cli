@@ -13,11 +13,16 @@
 
 When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Windsurf) without structure, models often jump straight to generating code without architecture, tests, or contract verification.
 
-**SDD CLI** solves this by scaffolding a deterministic specification workflow and injecting strict guidelines into `AGENTS.md` at the repository root. Any AI reading the repository is guided to follow the formal SDD lifecycle:
-1. **Proposal** (`proposal.md`): Intent, scope, capabilities, and risks.
-2. **Specifications** (`specs.md`): Formal requirements using RFC 2119 keywords and Given/When/Then scenarios.
-3. **Design** (`design.md`): Technical approach, architectural tradeoffs, and data flow.
-4. **Tasks** (`tasks.md`): Atomic, verifiable implementation checklist.
+**SDD CLI** solves this by scaffolding a deterministic specification workflow and injecting strict guidelines into `AGENTS.md` at the repository root. Any AI reading the repository is guided through an interactive, human-in-the-loop lifecycle:
+
+1. **Bootstrap & Inspection**: Deterministically checks if `openspec/` exists on disk. Automatically runs `sdd init` only once if missing.
+2. **Clarification Loop**: If the AI has open questions, it must ask the developer and resolve all doubts before proposing phase progression.
+3. **Proposal** (`proposal.md`): Intent, scope, and capabilities. *(Gate: requires user approval before specs)*.
+4. **Specifications** (`specs.md`): Formal requirements using RFC 2119 keywords and Given/When/Then scenarios. *(Gate: requires user approval before design)*.
+5. **Design** (`design.md`): Technical approach, architectural tradeoffs, and data flow. *(Gate: requires user approval before tasks)*.
+6. **Tasks** (`tasks.md`): Atomic, verifiable implementation checklist. *(Gate: requires user approval before coding)*.
+7. **Apply & Verify**: Implementation checked against `tasks.md`, followed by test execution, linting, and spec compliance audits.
+8. **Gated Archive**: Change is archived only after verification passes and the developer explicitly approves.
 
 ---
 
@@ -27,14 +32,14 @@ When developers prompt AI agents (Cursor, Claude Code, Copilot, Antigravity, Win
 
 Installs the CLI globally **AND** interactively prompts you to choose which AI environments to configure (or install all with `A`):
 
-- **[1] Antigravity 2.0** (`~/.gemini/config/skills/sdd/` + `/sdd`)
-- **[2] Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/` + `/sdd`)
+- **[1] Antigravity 2.0** (`~/.gemini/config/skills/sdd/` + `/sdd` and `/sdd-*` commands)
+- **[2] Antigravity CLI (`agy`)** (`~/.gemini/skills/sdd/` + `/sdd` and `/sdd-*` commands)
 - **[3] OpenAI Codex** (`~/.codex/AGENTS.md` + skills)
 - **[4] GitHub Copilot (VS Code)** (`~/.copilot/copilot-instructions.md` + skills)
 - **[5] OpenCode** (`~/.config/opencode/AGENTS.md` + skills)
-- **[6] Claude Code** (`~/.claude/CLAUDE.md` + `/sdd` command)
+- **[6] Claude Code** (`~/.claude/CLAUDE.md` + 9 native `/sdd*` commands)
 - **[7] Cursor** (`~/.cursor/rules/sdd.mdc` + skills)
-- **[8] Zed** (`AGENTS.md` + `/sdd` command + skill)
+- **[8] Zed** (`AGENTS.md` + 9 slash commands under `assistant.slash_commands.*` + skill)
 - **[A] All environments** (Default — just press Enter)
 
 **Windows (PowerShell):**
@@ -49,7 +54,16 @@ curl -fsSL https://raw.githubusercontent.com/dedasema/sdd-cli/main/scripts/insta
 
 Once installed, open any project in your preferred editor/agent and type in chat:
 - `"Quiero empezar este proyecto con SDD"`
-- Or use the slash command: `/sdd <feature-name>`
+- Or use any of the 9 slash commands:
+  - `/sdd`: Smart end-to-end orchestrator with interactive gates
+  - `/sdd-init`: Initialize OpenSpec structure
+  - `/sdd-new <feature>`: Scaffold a new change workspace
+  - `/sdd-propose`: Draft or refine proposal
+  - `/sdd-spec`: Draft Given/When/Then scenarios
+  - `/sdd-design`: Draft technical architecture decisions
+  - `/sdd-tasks`: Break down implementation checklist
+  - `/sdd-verify`: Run test suite and spec verification
+  - `/sdd-archive`: Formally verify and archive change
 
 Your AI will handle initialization and scaffolding autonomously in the background. Zero terminal required!
 

@@ -72,17 +72,26 @@ if (fs.existsSync(filePath)) {
     const leadingComments = firstBrace > 0 ? raw.slice(0, firstBrace).trim() : "";
     try {
         const settings = JSON.parse(stripJsonc(raw));
-        if (settings.assistant && settings.assistant.slash_commands && settings.assistant.slash_commands.sdd) {
-            delete settings.assistant.slash_commands.sdd;
+        const sddCommands = ["sdd", "sdd-init", "sdd-new", "sdd-propose", "sdd-spec", "sdd-design", "sdd-tasks", "sdd-verify", "sdd-archive"];
+        let modified = false;
+        if (settings.assistant && settings.assistant.slash_commands) {
+            for (const cmd of sddCommands) {
+                if (settings.assistant.slash_commands[cmd]) {
+                    delete settings.assistant.slash_commands[cmd];
+                    modified = true;
+                }
+            }
             if (Object.keys(settings.assistant.slash_commands).length === 0) {
                 delete settings.assistant.slash_commands;
             }
             if (Object.keys(settings.assistant).length === 0) {
                 delete settings.assistant;
             }
-            const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
-            fs.writeFileSync(filePath, output, "utf8");
-            console.log("    \x1b[33m[REMOVED] Zed Slash Command /sdd from " + filePath + "\x1b[0m");
+            if (modified) {
+                const output = (leadingComments ? leadingComments + "\n" : "") + JSON.stringify(settings, null, 2) + "\n";
+                fs.writeFileSync(filePath, output, "utf8");
+                console.log("    \x1b[33m[REMOVED] Zed SDD Slash Commands from " + filePath + "\x1b[0m");
+            }
         }
     } catch (e) {
         console.error("    [WARN] Unable to parse " + filePath + " during removal: " + e.message);
@@ -135,11 +144,15 @@ if ($selected -contains 5) {
 # [6] Claude Code
 if ($selected -contains 6) {
     Remove-DelimitedRule (Join-Path $homeDir ".claude\CLAUDE.md")
-    $claudeCmd = Join-Path $homeDir ".claude\commands\sdd.md"
-    if (Test-Path $claudeCmd) {
-        Remove-Item -Path $claudeCmd -Force -ErrorAction SilentlyContinue
-        Write-Host "    [REMOVED] Claude Command -> $claudeCmd" -ForegroundColor DarkYellow
+    $claudeDir = Join-Path $homeDir ".claude\commands"
+    $sddCmdFiles = @("sdd.md", "sdd-init.md", "sdd-new.md", "sdd-propose.md", "sdd-spec.md", "sdd-design.md", "sdd-tasks.md", "sdd-verify.md", "sdd-archive.md")
+    foreach ($cmdFile in $sddCmdFiles) {
+        $cmdPath = Join-Path $claudeDir $cmdFile
+        if (Test-Path $cmdPath) {
+            Remove-Item -Path $cmdPath -Force -ErrorAction SilentlyContinue
+        }
     }
+    Write-Host "    [REMOVED] Claude Commands (9 files) -> $claudeDir" -ForegroundColor DarkYellow
 }
 
 # [7] Cursor
